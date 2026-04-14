@@ -26,7 +26,7 @@ export default function Sorting() {
     return { values: u, counts };
   }, [arr]);
 
-  const anim = useAnimation({ totalSteps: op === "unique" ? uniqMap.values.length : n, intervalMs: 400 });
+  const anim = useAnimation({ totalSteps: op === "unique" ? uniqMap.values.length : n, baseMs: 400 });
 
   return (
     <PageShell title="Sorting" icon="🔃" accent="amber">
@@ -62,7 +62,7 @@ export default function Sorting() {
                       initial={{ height: 0 }}
                       animate={{ height: active ? `${sH}%` : 0 }}
                       transition={{ type: "spring", stiffness: 200, damping: 20 }}
-                      style={{ backgroundColor: active ? "#06b6d4" : "transparent" }}
+                      className={active ? "bg-[var(--accent)]" : "bg-transparent"}
                     />
                   </div>
                   <span className="text-[9px] font-mono text-txt-muted">{i}</span>
@@ -76,7 +76,7 @@ export default function Sorting() {
             <ArrayGrid
               data={[sorted.map((v, i) => (i <= anim.step ? v : NaN))]}
               title="Sorted" accent="amber" decimals={0}
-              cellMeta={(_, c) => (c === anim.step ? { highlight: "amber" } : {})} />
+              cellMeta={(_, c) => (c === anim.step ? { glow: "amber" } : {})} />
           </div>
           <CodePanel code="np.sort(arr)" />
         </>
@@ -86,19 +86,19 @@ export default function Sorting() {
         <>
           <div className="flex gap-6 flex-wrap items-start">
             <ArrayGrid data={[arr]} title="Original" accent="cyan" decimals={0}
-              cellMeta={(_, c) => (c === indices[anim.step] ? { highlight: "cyan" } : { dim: true })} />
+              cellMeta={(_, c) => (c === indices[anim.step] ? { glow: "cyan" } : { dim: true })} />
             <ArrayGrid
               data={[indices.map((v, i) => (i <= anim.step ? v : NaN))]}
               title="argsort indices" accent="violet" decimals={0}
-              cellMeta={(_, c) => (c === anim.step ? { highlight: "violet" } : {})} />
+              cellMeta={(_, c) => (c === anim.step ? { glow: "violet" } : {})} />
             <ArrayGrid
               data={[indices.map((idx, i) => (i <= anim.step ? arr[idx] : NaN))]}
               title="arr[argsort]" accent="amber" decimals={0}
-              cellMeta={(_, c) => (c === anim.step ? { highlight: "amber" } : {})} />
+              cellMeta={(_, c) => (c === anim.step ? { glow: "amber" } : {})} />
           </div>
           <FormulaBar accent="violet">
-            Position {anim.step}: index = <span className="text-accent-violet">{indices[anim.step]}</span>
-            {" → "} value = <span className="text-accent-amber font-bold">{fmt(arr[indices[anim.step]], 0)}</span>
+            Position {anim.step}: index = <span className="accent-violet">{indices[anim.step]}</span>
+            {" → "} value = <span className="accent-amber font-bold">{fmt(arr[indices[anim.step]], 0)}</span>
           </FormulaBar>
           <CodePanel code={`indices = np.argsort(arr)\nsorted = arr[indices]`} />
         </>
@@ -111,7 +111,7 @@ export default function Sorting() {
             <ArrayGrid
               data={[uniqMap.values.map((v, i) => (i <= anim.step ? v : NaN))]}
               title={`Unique (${uniqMap.values.length})`} accent="amber" decimals={0}
-              cellMeta={(_, c) => (c === anim.step ? { highlight: "amber" } : {})} />
+              cellMeta={(_, c) => (c === anim.step ? { glow: "amber" } : {})} />
           </div>
           {/* Counts bars */}
           <div className="flex items-end gap-[3px] h-24 px-1">
@@ -123,7 +123,7 @@ export default function Sorting() {
                 <div key={i} className="flex-1 flex flex-col items-center gap-1">
                   <motion.div
                     className="w-full rounded-t"
-                    animate={{ height: active ? `${h}%` : 0, backgroundColor: active ? "#06b6d4" : "#27272a" }}
+                    animate={{ height: active ? `${h}%` : 0, backgroundColor: active ? "var(--accent)" : "var(--s2)" }}
                     transition={{ type: "spring", stiffness: 200, damping: 20 }}
                   />
                   <span className="text-[9px] font-mono text-txt-muted">{fmt(v, 0)}</span>

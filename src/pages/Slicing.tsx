@@ -38,7 +38,7 @@ export default function Slicing() {
   const selected = useMemo(() => maskCells.map(([r, c]) => arr[r][c]), [maskCells, arr]);
 
   const totalScan = rows * cols;
-  const anim = useAnimation({ totalSteps: mode === "boolean" ? totalScan : 1, intervalMs: 200 });
+  const anim = useAnimation({ totalSteps: mode === "boolean" ? totalScan : 1, baseMs: 200 });
 
   const modeOpts: { value: Mode; label: string }[] = [
     { value: "basic", label: "Basic Slice" },
@@ -67,7 +67,7 @@ export default function Slicing() {
             <ArrayGrid data={arr} title="Original" accent="cyan" decimals={0} onCellEdit={editCell}
               cellMeta={(r, c) =>
                 r >= rStart && r < rEnd && c >= cStart && c < cEnd
-                  ? { highlight: "amber" } : { dim: true }
+                  ? { glow: "amber" } : { dim: true }
               } />
             <ArrayGrid data={sliced} title="Sliced" accent="amber" decimals={0} />
           </div>
@@ -97,7 +97,7 @@ export default function Slicing() {
                           p.includes(i) ? p.filter((x) => x !== i) : [...p, i].sort()
                         )}
                           className={`w-8 h-8 rounded font-mono text-xs border transition-colors
-                            ${selRows.includes(i) ? "bg-accent-cyan/20 border-accent-cyan text-accent-cyan" : "bg-surface-2 border-edge text-txt-muted"}`}
+                            ${selRows.includes(i) ? "accent-bg-cyan accent-border-cyan accent-cyan" : "bg-surface-2 border-edge text-txt-muted"}`}
                         >{i}</button>
                       ))}
                     </div>
@@ -110,7 +110,7 @@ export default function Slicing() {
                           p.includes(j) ? p.filter((x) => x !== j) : [...p, j].sort()
                         )}
                           className={`w-8 h-8 rounded font-mono text-xs border transition-colors
-                            ${selCols.includes(j) ? "bg-accent-violet/20 border-accent-violet text-accent-violet" : "bg-surface-2 border-edge text-txt-muted"}`}
+                            ${selCols.includes(j) ? "accent-bg-violet accent-border-violet accent-violet" : "bg-surface-2 border-edge text-txt-muted"}`}
                         >{j}</button>
                       ))}
                     </div>
@@ -119,7 +119,7 @@ export default function Slicing() {
                 <div className="flex gap-8 flex-wrap items-start">
                   <ArrayGrid data={arr} title="Original" accent="cyan" decimals={0} onCellEdit={editCell}
                     cellMeta={(r, c) =>
-                      selRows.includes(r) && selCols.includes(c) ? { highlight: "violet" } : { dim: true }
+                      selRows.includes(r) && selCols.includes(c) ? { glow: "violet" } : { dim: true }
                     } />
                   {fancied.length > 0 && (
                     <ArrayGrid data={fancied} title="Fancy indexed" accent="violet" decimals={0} />
@@ -149,8 +149,8 @@ export default function Slicing() {
                   <ArrayGrid data={arr} title="Scanning…" accent="cyan" decimals={0} onCellEdit={editCell}
                     cellMeta={(r, c) => {
                       const idx = r * cols + c;
-                      if (idx === anim.step) return { highlight: mask[r][c] ? "emerald" : "rose" };
-                      if (idx < anim.step && mask[r][c]) return { highlight: "emerald" };
+                      if (idx === anim.step) return { glow: mask[r][c] ? "emerald" : "rose" };
+                      if (idx < anim.step && mask[r][c]) return { glow: "emerald" };
                       if (idx > anim.step) return { dim: true };
                       return {};
                     }} />
@@ -163,8 +163,8 @@ export default function Slicing() {
                 <FormulaBar accent="emerald">
                   [{scanR},{scanC}] = {fmt(arr[scanR]?.[scanC] ?? 0, 0)}{" "}
                   {mask[scanR]?.[scanC]
-                    ? <span className="text-accent-emerald font-bold"> ✓ &gt; {thresh}</span>
-                    : <span className="text-accent-rose"> ✗ ≤ {thresh}</span>}
+                    ? <span className="accent-emerald font-bold"> ✓ &gt; {thresh}</span>
+                    : <span className="accent-rose"> ✗ ≤ {thresh}</span>}
                 </FormulaBar>
               </>
             );

@@ -1,8 +1,7 @@
-# 🔬 NumPy Visualizer
+# 🔬 NumPy Visualizer v3
 
-A cinematic, animation-first interactive tool for visualizing NumPy operations — built with React, Framer Motion, and Tailwind CSS.
-
-**No page reloads. No spinners. Every computation animates cell by cell with spring physics.**
+A cinematic, animation-first interactive tool for visualizing NumPy operations.  
+Built with **React 18 + Vite + Framer Motion + Tailwind CSS**.
 
 ---
 
@@ -11,129 +10,101 @@ A cinematic, animation-first interactive tool for visualizing NumPy operations �
 ```bash
 cd numpy-viz
 npm install
-npm run dev
+npm run dev          # opens http://localhost:3000
 ```
 
-Opens at **http://localhost:3000**.
+Production build:
+```bash
+npm run build        # static output in dist/
+```
+
+---
+
+## What's New in v3
+
+### Proper Light Theme
+Every accent color has a **distinct darker variant** for light mode (`#22d3ee` → `#0891b2`, `#a78bfa` → `#7c3aed`, etc.). Cell glow effects, heatmap backgrounds, and panel shadows all adapt automatically via CSS custom properties — not just inverted.
+
+### User Array Input
+Every page has a "Paste custom array" button (terminal icon). Type or paste arrays in any format:
+- JSON: `[[1,2],[3,4]]`
+- Space-separated: `1 2 3\n4 5 6`
+- CSV: `1,2,3\n4,5,6`
+
+Plus double-click any cell for inline editing.
+
+### Heatmap Cell Backgrounds
+Cells now show 5-level value-intensity backgrounds (`cell-heat-{accent}-{0..4}`). Higher values get deeper color saturation — makes patterns in matrices instantly visible.
+
+### Rich UI — Not Minimalistic
+- **Glass-morphism panels** (`backdrop-blur`) for all cards and sections
+- **Mesh gradient background** — colored radial gradients + subtle grid overlay
+- **Categorized sidebar** — operations grouped into Core, Shape & Transform, Analysis
+- **Step Explainer** — prose text explaining what's happening at the current animation step
+- **Speed control** — 0.5x / 1x / 1.5x / 2x / 3x buttons on every animation bar
+- **Keyboard shortcuts** — Space=play/pause, ←→=step, Home/End=jump
+- **Hover tooltips** on cells showing `[row, col] = value`
+- **Gradient progress bar** with scrub knob on animation controls
+- **Accent-colored top line** on code panels
+
+### Technical Upgrades
+- All CSS colors use custom properties — theme switches are instantaneous
+- Heatmap levels computed via `heatLevel()` utility
+- `parseMatrix()` accepts JSON, whitespace-separated, or CSV input
+- Animation hook reads speed multiplier from Zustand store
+- Keyboard event handler in `useAnimation` for shortcuts
 
 ---
 
 ## Tech Stack
 
-| Layer | Technology | Why |
-|---|---|---|
-| Framework | **React 18** + TypeScript | Component model, hooks |
-| Build | **Vite 6** | Sub-second HMR, instant startup |
-| Animations | **Framer Motion 11** | Spring physics, layout animations, AnimatePresence |
-| Styling | **Tailwind CSS 3** | Utility-first, dark/light theming via CSS variables |
-| State | **Zustand 5** | Minimal, no boilerplate, single store |
-| Code display | **prism-react-renderer** | Syntax-highlighted Python snippets |
-| Icons | **Lucide React** | Crisp, consistent icon set |
-| Math engine | **Custom TypeScript** | `src/lib/ndarray.ts` — lightweight NumPy-like ops |
-
----
-
-## Features
-
-### 🎬 Step-by-step Animations
-Every operation has a transport bar (⏮ ◀ ▶ ▶ ⏭) powered by `requestAnimationFrame` intervals — no page reloads. Hit Play and watch matmul fill cell by cell, cumsum grow a line chart, or a boolean mask scan every element.
-
-### ✏️ Editable Arrays
-Double-click any cell → type a new value → press Enter. The entire visualization updates instantly. Every page also has seed/size sliders for quick randomisation.
-
-### 🌙 ☀️ Theme Toggle
-One-click dark/light switch in the sidebar. Both themes use CSS custom properties so Plotly charts, grids, and code blocks all adapt seamlessly.
-
-### 🧲 Spring Physics
-Cell appearances use Framer Motion springs (`stiffness: 500, damping: 30`) — values animate in/out, highlighted cells glow with CSS box-shadows, and layout shifts use `layout` animations for smooth reshaping.
-
----
-
-## Pages
-
-| Page | Operations |
+| Layer | Technology |
 |---|---|
-| **Element-wise** | `+ − × ÷ ** % >` — animated cell-by-cell with partial result build |
-| **Matrix Multiply** | Step-through `A @ B` — highlights active row/column, shows dot product breakdown |
-| **Reshape & Transpose** | Elements flow from 1-D into 2-D grid; transpose maps `[i,j] → [j,i]`; flatten animates C-order |
-| **Broadcasting** | 3-stage: originals → virtual expansion → element-wise result building |
-| **Slicing & Indexing** | Basic slice, fancy indexing (toggle row/col buttons), boolean mask with animated scan |
-| **Aggregations** | `sum mean max min` along axis 0/1/None — animated group collapse + inline bar chart |
-| **Stacking** | `vstack` / `hstack` — rows/columns assemble one by one with origin tracking |
-| **Sorting** | `sort` (animated bar chart), `argsort` (index tracing), `unique` (count bars) |
-| **Cumulative Ops** | `cumsum`, `cumprod`, `diff` — animated line chart with running formula |
+| Framework | React 18 + TypeScript |
+| Build | Vite 6 |
+| Animation | Framer Motion 11 |
+| Styling | Tailwind CSS 3 + CSS custom properties |
+| State | Zustand 5 |
+| Code highlight | prism-react-renderer |
+| Icons | Lucide React |
+| Math engine | Custom `src/lib/ndarray.ts` |
+
+---
+
+## Pages (9 operations + home)
+
+| Page | Key Operations |
+|---|---|
+| **Element-wise** | `+ − × ÷ ** % >` — cell-by-cell animation + explainer text |
+| **Matrix Multiply** | Animated row×column with full dot-product drill-down |
+| **Reshape & Transpose** | Elements flow between shapes with position tracking |
+| **Broadcasting** | 3-stage: originals → expansion → result building |
+| **Slicing & Indexing** | Basic/fancy/boolean — animated mask scan |
+| **Aggregations** | Axis collapse with bar chart, group-by-group |
+| **Stacking** | vstack/hstack — row/column assembly animation |
+| **Sorting** | Bar chart animation + argsort index tracing + unique counts |
+| **Cumulative** | cumsum/cumprod/diff with live SVG line chart |
 
 ---
 
 ## Project Structure
 
 ```
-numpy-viz/
-├── package.json
-├── vite.config.ts
-├── tailwind.config.js
-├── tsconfig.json
-├── index.html
-├── src/
-│   ├── main.tsx                    # Entry point
-│   ├── App.tsx                     # Shell: sidebar + page router
-│   ├── index.css                   # Tailwind + theme variables + cell glow classes
-│   ├── lib/
-│   │   └── ndarray.ts              # NumPy-like matrix ops in TypeScript
-│   ├── store/
-│   │   └── useStore.ts             # Zustand: theme, page, sidebar state
-│   ├── hooks/
-│   │   └── useAnimation.ts         # Step controller with play/pause/interval
-│   ├── components/
-│   │   ├── ArrayGrid.tsx           # ⭐ Core array heatmap — animated cells
-│   │   ├── AnimControls.tsx        # Transport bar (⏮ ◀ ▶ ▶ ⏭)
-│   │   ├── Sidebar.tsx             # Navigation + theme toggle
-│   │   ├── CodePanel.tsx           # Syntax-highlighted Python code
-│   │   └── UI.tsx                  # PageShell, FormulaBar, Slider, Select, etc.
-│   └── pages/
-│       ├── Home.tsx
-│       ├── ElementWise.tsx
-│       ├── MatMul.tsx
-│       ├── Reshape.tsx
-│       ├── Broadcasting.tsx
-│       ├── Slicing.tsx
-│       ├── Aggregation.tsx
-│       ├── Stacking.tsx
-│       ├── Sorting.tsx
-│       └── Cumulative.tsx
+src/
+├── main.tsx
+├── App.tsx
+├── index.css                    # Dual theme vars, glass panels, heatmap classes
+├── lib/ndarray.ts               # Math engine + parseMatrix()
+├── store/useStore.ts            # Zustand: page, theme, speed
+├── hooks/useAnimation.ts        # Step controller + keyboard shortcuts
+├── components/
+│   ├── ArrayGrid.tsx            # ⭐ Heatmap cells, hover tooltip, inline edit
+│   ├── AnimControls.tsx         # Transport bar + speed selector
+│   ├── Sidebar.tsx              # Categorized nav + theme toggle
+│   ├── CodePanel.tsx            # Syntax-highlighted Python
+│   └── UI.tsx                   # Panel, ArrayInput, StepExplainer, Slider...
+└── pages/                       # 10 page components
 ```
-
----
-
-## Design Tokens
-
-The entire app is themed via CSS custom properties (`--surface-0` through `--surface-3`, `--text-primary`, `--border-color`, etc.) defined in `src/index.css`. Accent colors (`cyan`, `violet`, `amber`, `emerald`, `rose`) are shared across themes.
-
-Cell highlights use dedicated CSS classes (`.cell-highlight-cyan`, etc.) with `box-shadow` glow effects that adapt to theme brightness.
-
----
-
-## Extending
-
-**Add a new operation page:**
-1. Create `src/pages/MyOp.tsx` using `PageShell`, `ArrayGrid`, `AnimControls`, `CodePanel`
-2. Add entry to `NAV_ITEMS` in `src/store/useStore.ts`
-3. Import and add to `PAGE_MAP` in `src/App.tsx`
-
-**Add a new NumPy function:**
-1. Implement in `src/lib/ndarray.ts`
-2. Use in your page component
-
----
-
-## Deployment
-
-```bash
-npm run build        # outputs to dist/
-npx serve dist       # preview locally
-```
-
-Deploy `dist/` to Vercel, Netlify, Cloudflare Pages, or any static host.
 
 ---
 

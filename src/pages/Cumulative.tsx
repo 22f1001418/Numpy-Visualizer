@@ -25,7 +25,7 @@ export default function Cumulative() {
     return diff(arr);
   }, [arr, op]);
 
-  const anim = useAnimation({ totalSteps: result.length, intervalMs: 420 });
+  const anim = useAnimation({ totalSteps: result.length, baseMs: 420 });
   const maxResult = Math.max(...result.map(Math.abs), 1);
 
   // Build formula for current step
@@ -60,16 +60,16 @@ export default function Cumulative() {
         <ArrayGrid data={[arr]} title="Input" accent="cyan" decimals={0}
           cellMeta={(_, c) => {
             if (op === "diff") {
-              if (c === anim.step || c === anim.step + 1) return { highlight: "cyan" };
+              if (c === anim.step || c === anim.step + 1) return { glow: "cyan" };
             } else {
-              if (c <= anim.step) return { highlight: "cyan" };
+              if (c <= anim.step) return { glow: "cyan" };
             }
             return { dim: true };
           }} />
         <ArrayGrid
           data={[result.map((v, i) => (i <= anim.step ? v : NaN))]}
           title={`np.${op}()`} accent="rose" decimals={0}
-          cellMeta={(_, c) => (c === anim.step ? { highlight: "rose" } : {})} />
+          cellMeta={(_, c) => (c === anim.step ? { glow: "rose" } : {})} />
       </div>
 
       {/* Line chart */}
@@ -118,7 +118,7 @@ export default function Cumulative() {
             return (
               <motion.div
                 key={i}
-                className="absolute w-2 h-2 rounded-full bg-accent-rose"
+                className="absolute w-2 h-2 rounded-full bg-[var(--accent)]"
                 style={{ left: `${left}%`, bottom: `${bottom}%`, marginLeft: -4, marginBottom: -4 }}
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}

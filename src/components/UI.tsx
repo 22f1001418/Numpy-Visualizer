@@ -1,164 +1,186 @@
 import { motion } from "framer-motion";
-import { type ReactNode } from "react";
+import { type ReactNode, useState, useCallback } from "react";
+import { Terminal, AlertCircle, ArrowRight } from "lucide-react";
+import { parseMatrix, type Matrix } from "../lib/ndarray";
 
 /* ═══ Page Shell ═══════════════════════════════════════════ */
 export function PageShell({ title, icon, accent = "cyan", children }: {
   title: string; icon: string; accent?: string; children: ReactNode;
 }) {
-  const colorMap: Record<string, string> = {
-    cyan: "text-accent-cyan", violet: "text-accent-violet", amber: "text-accent-amber",
-    emerald: "text-accent-emerald", rose: "text-accent-rose",
-  };
   return (
     <motion.div
-      initial={{ opacity: 0, y: 16 }}
+      initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, ease: "easeOut" }}
-      className="flex flex-col gap-6 p-8 max-w-[1400px] mx-auto w-full"
+      transition={{ duration: 0.3 }}
+      className="flex flex-col gap-5 p-6 lg:p-8 max-w-[1400px] mx-auto w-full relative z-10"
     >
-      <div>
-        <h1 className={`text-2xl font-bold ${colorMap[accent] ?? "text-accent-cyan"}`}>
-          <span className="mr-2">{icon}</span>{title}
-        </h1>
+      {/* Page header */}
+      <div className="flex items-center gap-3">
+        <span className="text-2xl">{icon}</span>
+        <h1 className={`text-xl lg:text-2xl font-bold accent-${accent}`}>{title}</h1>
       </div>
-      <div className="flex flex-col gap-6">{children}</div>
+      <div className="flex flex-col gap-5">{children}</div>
     </motion.div>
   );
 }
 
-/* ═══ Formula Bar ══════════════════════════════════════════ */
-export function FormulaBar({ children, accent = "cyan" }: {
-  children: ReactNode; accent?: string;
-}) {
-  const borderMap: Record<string, string> = {
-    cyan: "border-accent-cyan/40", violet: "border-accent-violet/40",
-    amber: "border-accent-amber/40", rose: "border-accent-rose/40",
-    emerald: "border-accent-emerald/40",
-  };
+/* ═══ Section Panel ════════════════════════════════════════ */
+export function Panel({ title, children, accent }: { title?: string; children: ReactNode; accent?: string }) {
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.98 }}
-      animate={{ opacity: 1, scale: 1 }}
-      className={`
-        font-mono text-sm text-center px-5 py-3 rounded-xl
-        bg-surface-1 border ${borderMap[accent] ?? borderMap.cyan}
-      `}
-    >
+    <div className="glass-panel p-4 lg:p-5 flex flex-col gap-3">
+      {title && <h3 className={`text-xs font-bold uppercase tracking-[0.12em] ${accent ? `accent-${accent}` : "text-txt-muted"}`}>{title}</h3>}
+      {children}
+    </div>
+  );
+}
+
+/* ═══ Formula Bar ══════════════════════════════════════════ */
+export function FormulaBar({ children, accent = "cyan" }: { children: ReactNode; accent?: string }) {
+  return (
+    <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }}
+      className={`glass-panel font-mono text-sm text-center px-5 py-3 accent-border-${accent} border`}>
       {children}
     </motion.div>
   );
 }
 
-/* ═══ Shape Badge ══════════════════════════════════════════ */
-export function ShapeBadge({ shape, accent = "cyan" }: {
-  shape: number[]; accent?: string;
-}) {
-  const textMap: Record<string, string> = {
-    cyan: "text-accent-cyan", violet: "text-accent-violet",
-    amber: "text-accent-amber", rose: "text-accent-rose",
-    emerald: "text-accent-emerald",
-  };
+/* ═══ Step Explainer ═══════════════════════════════════════ */
+export function StepExplainer({ text, accent = "cyan" }: { text: string; accent?: string }) {
   return (
-    <span className={`
-      inline-flex items-center font-mono text-xs font-semibold px-2.5 py-1 rounded-md
-      bg-surface-2 border border-edge ${textMap[accent] ?? textMap.cyan}
-    `}>
+    <div className={`flex items-start gap-2.5 glass-panel px-4 py-3 accent-border-${accent} border-l-[3px]`}>
+      <ArrowRight size={14} className={`accent-${accent} shrink-0 mt-0.5`} />
+      <p className="text-sm text-txt-secondary leading-relaxed">{text}</p>
+    </div>
+  );
+}
+
+/* ═══ Shape Badge ══════════════════════════════════════════ */
+export function ShapeBadge({ shape, accent = "cyan" }: { shape: number[]; accent?: string }) {
+  return (
+    <span className={`inline-flex items-center font-mono text-[11px] font-bold px-2.5 py-1 rounded-lg bg-surface-2 border border-edge accent-${accent}`}>
       ({shape.join(" × ")})
     </span>
   );
 }
 
-/* ═══ OP Symbol ════════════════════════════════════════════ */
-export function OpSymbol({ symbol, accent = "cyan" }: {
-  symbol: string; accent?: string;
-}) {
-  const colorMap: Record<string, string> = {
-    cyan: "text-accent-cyan", violet: "text-accent-violet",
-    amber: "text-accent-amber", rose: "text-accent-rose",
-  };
+/* ═══ Op Symbol ════════════════════════════════════════════ */
+export function OpSymbol({ symbol, accent = "cyan" }: { symbol: string; accent?: string }) {
+  return <div className={`flex items-center justify-center text-2xl font-bold font-mono accent-${accent}`}>{symbol}</div>;
+}
+
+/* ═══ Big Result ═══════════════════════════════════════════ */
+export function BigResult({ value, label, accent = "amber" }: { value: string; label: string; accent?: string }) {
   return (
-    <div className={`
-      flex items-center justify-center text-3xl font-bold font-mono
-      ${colorMap[accent] ?? colorMap.cyan}
-    `}>
-      {symbol}
-    </div>
+    <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+      className={`glass-panel flex flex-col items-center gap-1 px-8 py-5 accent-border-${accent} border`}>
+      <span className="text-[9px] uppercase tracking-[0.2em] text-txt-muted font-mono">{label}</span>
+      <span className={`text-3xl font-bold font-mono accent-${accent}`}>{value}</span>
+    </motion.div>
   );
 }
 
 /* ═══ Slider ═══════════════════════════════════════════════ */
 export function Slider({ label, value, min, max, onChange, step = 1 }: {
-  label: string; value: number; min: number; max: number;
-  onChange: (v: number) => void; step?: number;
+  label: string; value: number; min: number; max: number; onChange: (v: number) => void; step?: number;
 }) {
   return (
-    <label className="flex flex-col gap-1">
+    <label className="flex flex-col gap-1.5 min-w-[120px]">
       <div className="flex justify-between items-baseline">
-        <span className="text-xs text-txt-secondary">{label}</span>
-        <span className="font-mono text-xs text-accent-cyan font-semibold">{value}</span>
+        <span className="text-[11px] text-txt-secondary font-medium">{label}</span>
+        <span className="font-mono text-[11px] accent-cyan font-bold">{value}</span>
       </div>
-      <input
-        type="range" min={min} max={max} step={step} value={value}
+      <input type="range" min={min} max={max} step={step} value={value}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="w-full h-1.5 bg-surface-2 rounded-full appearance-none cursor-pointer
-                   [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3.5
-                   [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:rounded-full
-                   [&::-webkit-slider-thumb]:bg-accent-cyan [&::-webkit-slider-thumb]:shadow-lg
-                   [&::-webkit-slider-thumb]:shadow-cyan-500/30"
-      />
+        className="w-full h-1.5 bg-surface-3 rounded-full appearance-none cursor-pointer
+                   [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4
+                   [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full
+                   [&::-webkit-slider-thumb]:bg-[var(--accent)] [&::-webkit-slider-thumb]:shadow-lg
+                   [&::-webkit-slider-thumb]:shadow-[var(--glow)]
+                   [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white/20" />
     </label>
   );
 }
 
 /* ═══ Select ═══════════════════════════════════════════════ */
 export function Select<T extends string>({ label, value, options, onChange }: {
-  label: string; value: T; options: { value: T; label: string }[];
-  onChange: (v: T) => void;
+  label: string; value: T; options: { value: T; label: string }[]; onChange: (v: T) => void;
 }) {
   return (
-    <label className="flex flex-col gap-1">
-      <span className="text-xs text-txt-secondary">{label}</span>
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value as T)}
-        className="bg-surface-2 border border-edge rounded-lg px-3 py-1.5
-                   font-mono text-sm text-txt-primary outline-none
-                   focus:border-accent-cyan/50 transition-colors cursor-pointer"
-      >
-        {options.map((o) => (
-          <option key={o.value} value={o.value}>{o.label}</option>
-        ))}
+    <label className="flex flex-col gap-1.5 min-w-[140px]">
+      <span className="text-[11px] text-txt-secondary font-medium">{label}</span>
+      <select value={value} onChange={(e) => onChange(e.target.value as T)}
+        className="bg-surface-2 border border-edge rounded-lg px-3 py-2 font-mono text-sm text-txt-primary outline-none focus:border-[var(--accent)]/50 transition-colors cursor-pointer">
+        {options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
       </select>
     </label>
   );
 }
 
-/* ═══ Big Result ═══════════════════════════════════════════ */
-export function BigResult({ value, label, accent = "amber" }: {
-  value: string; label: string; accent?: string;
+/* ═══ Array Input — paste or type array values ═════════════ */
+export function ArrayInput({ onParsed, placeholder, accent = "cyan" }: {
+  onParsed: (m: Matrix) => void;
+  placeholder?: string;
+  accent?: string;
 }) {
-  const colorMap: Record<string, string> = {
-    cyan: "text-accent-cyan border-accent-cyan/30",
-    amber: "text-accent-amber border-accent-amber/30",
-    violet: "text-accent-violet border-accent-violet/30",
-    rose: "text-accent-rose border-accent-rose/30",
-  };
+  const [text, setText] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [open, setOpen] = useState(false);
+
+  const handleParse = useCallback(() => {
+    const result = parseMatrix(text);
+    if (result.ok) {
+      onParsed(result.data);
+      setError(null);
+      setOpen(false);
+    } else {
+      setError(result.error);
+    }
+  }, [text, onParsed]);
+
   return (
-    <motion.div
-      initial={{ scale: 0.95, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-      className={`
-        flex flex-col items-center gap-1 px-8 py-5 rounded-2xl
-        bg-surface-1 border ${colorMap[accent] ?? colorMap.amber}
-      `}
-    >
-      <span className="text-[10px] uppercase tracking-widest text-txt-muted font-mono">{label}</span>
-      <span className={`text-3xl font-bold font-mono ${colorMap[accent]?.split(" ")[0]}`}>{value}</span>
-    </motion.div>
+    <div className="flex flex-col gap-2">
+      <button onClick={() => setOpen(!open)}
+        className={`flex items-center gap-2 text-[11px] font-mono font-medium accent-${accent} hover:underline underline-offset-2`}>
+        <Terminal size={12} /> {open ? "Close input" : "Paste custom array"}
+      </button>
+
+      {open && (
+        <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }}
+          className="glass-panel p-3 flex flex-col gap-2 overflow-hidden">
+          <textarea
+            value={text} onChange={(e) => { setText(e.target.value); setError(null); }}
+            placeholder={placeholder || "[[1, 2, 3],\n [4, 5, 6]]  or  1 2 3\\n4 5 6"}
+            className="bg-surface-2 border border-edge rounded-lg px-3 py-2 font-mono text-xs text-txt-primary resize-y min-h-[60px] outline-none focus:border-[var(--accent)]/50 placeholder:text-txt-muted/40"
+            rows={3}
+          />
+          <div className="flex items-center gap-2">
+            <button onClick={handleParse}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold accent-bg-${accent} accent-${accent} border accent-border-${accent} hover:brightness-110 transition-all`}>
+              Apply
+            </button>
+            {error && (
+              <div className="flex items-center gap-1.5 text-xs accent-rose">
+                <AlertCircle size={12} /> {error}
+              </div>
+            )}
+          </div>
+          <div className="text-[9px] text-txt-muted font-mono">
+            Accepts: JSON arrays, space-separated rows, or CSV
+          </div>
+        </motion.div>
+      )}
+    </div>
   );
 }
 
-/* ═══ Section Divider ══════════════════════════════════════ */
-export function Divider() {
-  return <div className="h-px bg-edge" />;
+/* ═══ Divider ══════════════════════════════════════════════ */
+export function Divider() { return <div className="h-px bg-edge" />; }
+
+/* ═══ Controls Row ═════════════════════════════════════════ */
+export function ControlsRow({ children }: { children: ReactNode }) {
+  return (
+    <Panel title="Controls">
+      <div className="flex flex-wrap gap-4 items-end">{children}</div>
+    </Panel>
+  );
 }

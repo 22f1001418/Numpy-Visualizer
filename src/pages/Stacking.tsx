@@ -32,7 +32,7 @@ export default function Stacking() {
   const [rR, cR] = shape(result);
 
   const totalSteps = isVert ? rR : cR;
-  const anim = useAnimation({ totalSteps, intervalMs: 450 });
+  const anim = useAnimation({ totalSteps, baseMs: 450 });
 
   const [rA] = shape(A);
   const origin = isVert
@@ -69,13 +69,13 @@ export default function Stacking() {
           accent="amber" decimals={0}
           cellMeta={(r, c) => {
             const active = isVert ? r === anim.step : c === anim.step;
-            return active ? { highlight: "amber" } : {};
+            return active ? { glow: "amber" } : {};
           }}
         />
       </div>
 
       <FormulaBar accent="amber">
-        {isVert ? "Row" : "Col"} {anim.step} comes from <span className={`font-bold ${origin === "A" ? "text-accent-cyan" : "text-accent-violet"}`}>{origin}</span>
+        {isVert ? "Row" : "Col"} {anim.step} comes from <span className={`font-bold ${origin === "A" ? "accent-cyan" : "accent-violet"}`}>{origin}</span>
       </FormulaBar>
 
       <CodePanel code={`np.${op}([A, B])`} />

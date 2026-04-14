@@ -2,117 +2,175 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ═══ Dark theme (default) ═══════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════
+   DARK THEME
+   ═══════════════════════════════════════════════════════════ */
 :root, .dark {
-  --surface-0: #09090b;
-  --surface-1: #18181b;
-  --surface-2: #27272a;
-  --surface-3: #3f3f46;
-  --text-primary: #fafafa;
-  --text-secondary: #a1a1aa;
-  --text-muted: #71717a;
-  --border-color: #27272a;
-  --glow-color: rgba(6, 182, 212, 0.4);
+  --s0: #09090b; --s1: #131316; --s2: #1c1c22; --s3: #2a2a33; --s4: #3a3a46;
+  --t1: #f0f0f5; --t2: #9e9eb0; --t3: #636375; --t-inv: #09090b;
+  --border: #232330; --border-strong: #3a3a46;
+  --glow: rgba(34,211,238,0.35);
+  --panel-bg: rgba(19,19,22,0.75);
+  --panel-border: rgba(255,255,255,0.06);
+  --cell-base: #17171d;
+  --cell-border: #2a2a33;
+  --accent: #22d3ee;
+  --accent-muted: rgba(34,211,238,0.12);
   color-scheme: dark;
 }
 
-/* ═══ Light theme ════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════
+   LIGHT THEME — fully distinct palette, not just inverted
+   ═══════════════════════════════════════════════════════════ */
 .light {
-  --surface-0: #fafafa;
-  --surface-1: #f4f4f5;
-  --surface-2: #e4e4e7;
-  --surface-3: #d4d4d8;
-  --text-primary: #09090b;
-  --text-secondary: #52525b;
-  --text-muted: #a1a1aa;
-  --border-color: #e4e4e7;
-  --glow-color: rgba(6, 182, 212, 0.25);
+  --s0: #f5f5f7; --s1: #ffffff; --s2: #eeeef2; --s3: #dddde3; --s4: #c8c8d0;
+  --t1: #111118; --t2: #555566; --t3: #8888a0; --t-inv: #f5f5f7;
+  --border: #dddde3; --border-strong: #c0c0cc;
+  --glow: rgba(8,145,178,0.25);
+  --panel-bg: rgba(255,255,255,0.82);
+  --panel-border: rgba(0,0,0,0.06);
+  --cell-base: #ffffff;
+  --cell-border: #dddde3;
+  --accent: #0891b2;
+  --accent-muted: rgba(8,145,178,0.08);
   color-scheme: light;
 }
 
-/* ═══ Base ════════════════════════════════════════════════ */
-* { box-sizing: border-box; }
-
+/* ═══════════════════════════════════════════════════════════
+   BASE RESETS
+   ═══════════════════════════════════════════════════════════ */
+* { box-sizing: border-box; margin: 0; }
 body {
-  margin: 0;
   font-family: 'Space Grotesk', system-ui, sans-serif;
-  background: var(--surface-0);
-  color: var(--text-primary);
+  background: var(--s0);
+  color: var(--t1);
   -webkit-font-smoothing: antialiased;
   overflow: hidden;
 }
+#root { height: 100dvh; display: flex; }
 
-#root {
-  height: 100dvh;
-  display: flex;
-}
-
-/* ═══ Scrollbar ══════════════════════════════════════════ */
-::-webkit-scrollbar { width: 6px; height: 6px; }
+/* ═══ Scrollbar ═══════════════════════════════════════════ */
+::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb {
-  background: var(--surface-3);
-  border-radius: 999px;
-}
-::-webkit-scrollbar-thumb:hover { background: #52525b; }
+::-webkit-scrollbar-thumb { background: var(--s3); border-radius: 999px; }
 
-/* ═══ Cell glow states ═══════════════════════════════════ */
-.cell-highlight-cyan {
-  --glow-color: rgba(6, 182, 212, 0.5);
-  box-shadow: 0 0 12px 2px var(--glow-color), inset 0 0 8px 0 rgba(6,182,212,0.1);
-  border-color: #06b6d4 !important;
+/* ═══════════════════════════════════════════════════════════
+   GLASS PANELS — backdrop-blur cards used everywhere
+   ═══════════════════════════════════════════════════════════ */
+.glass-panel {
+  background: var(--panel-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--panel-border);
+  border-radius: 16px;
 }
-.cell-highlight-violet {
-  --glow-color: rgba(139, 92, 246, 0.5);
-  box-shadow: 0 0 12px 2px var(--glow-color), inset 0 0 8px 0 rgba(139,92,246,0.1);
-  border-color: #8b5cf6 !important;
-}
-.cell-highlight-amber {
-  --glow-color: rgba(245, 158, 11, 0.5);
-  box-shadow: 0 0 12px 2px var(--glow-color), inset 0 0 8px 0 rgba(245,158,11,0.1);
-  border-color: #f59e0b !important;
-}
-.cell-highlight-emerald {
-  --glow-color: rgba(16, 185, 129, 0.5);
-  box-shadow: 0 0 12px 2px var(--glow-color), inset 0 0 8px 0 rgba(16,185,129,0.1);
-  border-color: #10b981 !important;
-}
-.cell-highlight-rose {
-  --glow-color: rgba(244, 63, 94, 0.5);
-  box-shadow: 0 0 12px 2px var(--glow-color), inset 0 0 8px 0 rgba(244,63,94,0.1);
-  border-color: #f43f5e !important;
-}
+.dark .glass-panel { box-shadow: 0 4px 32px -4px rgba(0,0,0,0.4); }
+.light .glass-panel { box-shadow: 0 4px 24px -4px rgba(0,0,0,0.06); }
 
-/* ═══ Noise texture overlay ══════════════════════════════ */
-.noise-bg::before {
+/* ═══════════════════════════════════════════════════════════
+   MESH BACKGROUND — subtle colored gradients on main area
+   ═══════════════════════════════════════════════════════════ */
+.mesh-bg {
+  position: relative;
+}
+.mesh-bg::before {
   content: '';
   position: fixed;
   inset: 0;
   z-index: 0;
-  opacity: 0.03;
   pointer-events: none;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.dark .mesh-bg::before {
+  background:
+    radial-gradient(ellipse 70% 50% at 20% 10%, rgba(34,211,238,0.06) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 40% at 80% 90%, rgba(167,139,250,0.05) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 30% at 50% 50%, rgba(251,191,36,0.02) 0%, transparent 50%);
+}
+.light .mesh-bg::before {
+  background:
+    radial-gradient(ellipse 70% 50% at 20% 10%, rgba(8,145,178,0.05) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 40% at 80% 90%, rgba(124,58,237,0.04) 0%, transparent 60%);
 }
 
-/* ═══ Utility ════════════════════════════════════════════ */
-.glass {
-  background: rgba(24, 24, 27, 0.6);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+/* Grid overlay */
+.mesh-bg::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-size: 40px 40px;
 }
-.light .glass {
-  background: rgba(255, 255, 255, 0.7);
+.dark .mesh-bg::after {
+  background-image:
+    linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+}
+.light .mesh-bg::after {
+  background-image:
+    linear-gradient(rgba(0,0,0,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,0,0,0.025) 1px, transparent 1px);
 }
 
+/* ═══════════════════════════════════════════════════════════
+   CELL GLOW HIGHLIGHTS — accent-colored box-shadows
+   ═══════════════════════════════════════════════════════════ */
+.cell-glow-cyan    { --glow: rgba(34,211,238,0.5);  box-shadow: 0 0 14px 3px var(--glow), inset 0 0 6px rgba(34,211,238,0.1);  border-color: #22d3ee !important; }
+.cell-glow-violet  { --glow: rgba(167,139,250,0.5); box-shadow: 0 0 14px 3px var(--glow), inset 0 0 6px rgba(167,139,250,0.1); border-color: #a78bfa !important; }
+.cell-glow-amber   { --glow: rgba(251,191,36,0.5);  box-shadow: 0 0 14px 3px var(--glow), inset 0 0 6px rgba(251,191,36,0.1);  border-color: #fbbf24 !important; }
+.cell-glow-emerald { --glow: rgba(52,211,153,0.5);  box-shadow: 0 0 14px 3px var(--glow), inset 0 0 6px rgba(52,211,153,0.1);  border-color: #34d399 !important; }
+.cell-glow-rose    { --glow: rgba(251,113,133,0.5);  box-shadow: 0 0 14px 3px var(--glow), inset 0 0 6px rgba(251,113,133,0.1);  border-color: #fb7185 !important; }
+
+/* Light mode — tighter, subtler glow */
+.light .cell-glow-cyan    { --glow: rgba(8,145,178,0.3);  border-color: #0891b2 !important; box-shadow: 0 0 10px 2px var(--glow); }
+.light .cell-glow-violet  { --glow: rgba(124,58,237,0.3);  border-color: #7c3aed !important; box-shadow: 0 0 10px 2px var(--glow); }
+.light .cell-glow-amber   { --glow: rgba(217,119,6,0.3);   border-color: #d97706 !important; box-shadow: 0 0 10px 2px var(--glow); }
+.light .cell-glow-emerald { --glow: rgba(5,150,105,0.3);   border-color: #059669 !important; box-shadow: 0 0 10px 2px var(--glow); }
+.light .cell-glow-rose    { --glow: rgba(225,29,72,0.3);   border-color: #e11d48 !important; box-shadow: 0 0 10px 2px var(--glow); }
+
+/* ═══════════════════════════════════════════════════════════
+   HEATMAP CELL BACKGROUNDS — per-accent intensity classes
+   Generated via JS: cell-heat-{accent}-{0..4}
+   ═══════════════════════════════════════════════════════════ */
+.dark .cell-heat-cyan-0 { background: #131316; } .dark .cell-heat-cyan-1 { background: #0c2a30; } .dark .cell-heat-cyan-2 { background: #0e4550; } .dark .cell-heat-cyan-3 { background: #106070; } .dark .cell-heat-cyan-4 { background: #148090; }
+.dark .cell-heat-violet-0 { background: #131316; } .dark .cell-heat-violet-1 { background: #1a1530; } .dark .cell-heat-violet-2 { background: #2a2055; } .dark .cell-heat-violet-3 { background: #3b2b7a; } .dark .cell-heat-violet-4 { background: #4c36a0; }
+.dark .cell-heat-amber-0 { background: #131316; } .dark .cell-heat-amber-1 { background: #2a2010; } .dark .cell-heat-amber-2 { background: #453518; } .dark .cell-heat-amber-3 { background: #604a20; } .dark .cell-heat-amber-4 { background: #806028; }
+.dark .cell-heat-emerald-0 { background: #131316; } .dark .cell-heat-emerald-1 { background: #0c2a20; } .dark .cell-heat-emerald-2 { background: #104530; } .dark .cell-heat-emerald-3 { background: #146040; } .dark .cell-heat-emerald-4 { background: #188050; }
+.dark .cell-heat-rose-0 { background: #131316; } .dark .cell-heat-rose-1 { background: #2a1018; } .dark .cell-heat-rose-2 { background: #451828; } .dark .cell-heat-rose-3 { background: #602038; } .dark .cell-heat-rose-4 { background: #802848; }
+
+.light .cell-heat-cyan-0 { background: #ffffff; } .light .cell-heat-cyan-1 { background: #e6f8fb; } .light .cell-heat-cyan-2 { background: #ccf0f5; } .light .cell-heat-cyan-3 { background: #a3e4ee; } .light .cell-heat-cyan-4 { background: #7ad8e8; }
+.light .cell-heat-violet-0 { background: #ffffff; } .light .cell-heat-violet-1 { background: #f0ebfe; } .light .cell-heat-violet-2 { background: #e0d6fd; } .light .cell-heat-violet-3 { background: #c9b8fb; } .light .cell-heat-violet-4 { background: #b19afa; }
+.light .cell-heat-amber-0 { background: #ffffff; } .light .cell-heat-amber-1 { background: #fef6e0; } .light .cell-heat-amber-2 { background: #fdecc0; } .light .cell-heat-amber-3 { background: #fbdd90; } .light .cell-heat-amber-4 { background: #f9ce60; }
+.light .cell-heat-emerald-0 { background: #ffffff; } .light .cell-heat-emerald-1 { background: #e6faf0; } .light .cell-heat-emerald-2 { background: #ccf5e1; } .light .cell-heat-emerald-3 { background: #a3ebc8; } .light .cell-heat-emerald-4 { background: #7ae0b0; }
+.light .cell-heat-rose-0 { background: #ffffff; } .light .cell-heat-rose-1 { background: #fde8ec; } .light .cell-heat-rose-2 { background: #fbd0d8; } .light .cell-heat-rose-3 { background: #f8a8b8; } .light .cell-heat-rose-4 { background: #f58098; }
+
+/* ═══ Gradient text utilities ════════════════════════════ */
 @layer utilities {
-  .text-gradient-cyan {
-    background: linear-gradient(135deg, #06b6d4, #22d3ee);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-  .text-gradient-violet {
-    background: linear-gradient(135deg, #8b5cf6, #a78bfa);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
+  .text-grad-cyan   { background: linear-gradient(135deg, #22d3ee, #06b6d4); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .text-grad-violet { background: linear-gradient(135deg, #a78bfa, #7c3aed); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .text-grad-amber  { background: linear-gradient(135deg, #fbbf24, #d97706); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .light .text-grad-cyan   { background: linear-gradient(135deg, #0891b2, #0e7490); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .light .text-grad-violet { background: linear-gradient(135deg, #7c3aed, #6d28d9); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .light .text-grad-amber  { background: linear-gradient(135deg, #d97706, #b45309); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 }
+
+/* ═══ Accent-aware text (auto dark/light) ════════════════ */
+.accent-cyan    { color: #22d3ee; } .light .accent-cyan    { color: #0891b2; }
+.accent-violet  { color: #a78bfa; } .light .accent-violet  { color: #7c3aed; }
+.accent-amber   { color: #fbbf24; } .light .accent-amber   { color: #d97706; }
+.accent-emerald { color: #34d399; } .light .accent-emerald { color: #059669; }
+.accent-rose    { color: #fb7185; } .light .accent-rose    { color: #e11d48; }
+
+/* Accent backgrounds (auto) */
+.accent-bg-cyan    { background: rgba(34,211,238,0.12); } .light .accent-bg-cyan    { background: rgba(8,145,178,0.08); }
+.accent-bg-violet  { background: rgba(167,139,250,0.12); } .light .accent-bg-violet  { background: rgba(124,58,237,0.08); }
+.accent-bg-amber   { background: rgba(251,191,36,0.12); } .light .accent-bg-amber   { background: rgba(217,119,6,0.08); }
+.accent-bg-emerald { background: rgba(52,211,153,0.12); } .light .accent-bg-emerald { background: rgba(5,150,105,0.08); }
+.accent-bg-rose    { background: rgba(251,113,133,0.12); } .light .accent-bg-rose    { background: rgba(225,29,72,0.08); }
+
+/* Accent borders (auto) */
+.accent-border-cyan    { border-color: rgba(34,211,238,0.3); }   .light .accent-border-cyan    { border-color: rgba(8,145,178,0.25); }
+.accent-border-violet  { border-color: rgba(167,139,250,0.3); }  .light .accent-border-violet  { border-color: rgba(124,58,237,0.25); }
+.accent-border-amber   { border-color: rgba(251,191,36,0.3); }   .light .accent-border-amber   { border-color: rgba(217,119,6,0.25); }
+.accent-border-emerald { border-color: rgba(52,211,153,0.3); }   .light .accent-border-emerald { border-color: rgba(5,150,105,0.25); }
+.accent-border-rose    { border-color: rgba(251,113,133,0.3); }  .light .accent-border-rose    { border-color: rgba(225,29,72,0.25); }

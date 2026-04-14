@@ -1,11 +1,10 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { type Matrix, fmt } from "../lib/ndarray";
-import { useState, useCallback } from "react";
-
-type AccentColor = "cyan" | "violet" | "amber" | "emerald" | "rose";
+import { useState, useCallback, useMemo } from "react";
+import { type Matrix, type Accent, fmt, heatLevel } from "../lib/ndarray";
+import type { Accent as AccentType } from "../store/useStore";
 
 interface CellMeta {
-  highlight?: AccentColor;
+  glow?: AccentType;   // animated glow border
   dim?: boolean;
   computed?: boolean;
 }
@@ -13,157 +12,126 @@ interface CellMeta {
 interface Props {
   data: Matrix;
   title?: string;
-  accent?: AccentColor;
+  accent?: AccentType;
   cellMeta?: (row: number, col: number) => CellMeta;
   onCellEdit?: (row: number, col: number, value: number) => void;
   decimals?: number;
   compact?: boolean;
   label?: string;
   showIndices?: boolean;
+  heatmap?: boolean; // enable value-dependent background
 }
-
-const ACCENT_BG: Record<AccentColor, string> = {
-  cyan:    "bg-cyan-500/10",
-  violet:  "bg-violet-500/10",
-  amber:   "bg-amber-500/10",
-  emerald: "bg-emerald-500/10",
-  rose:    "bg-rose-500/10",
-};
-
-const ACCENT_BORDER: Record<AccentColor, string> = {
-  cyan:    "border-cyan-500/30",
-  violet:  "border-violet-500/30",
-  amber:   "border-amber-500/30",
-  emerald: "border-emerald-500/30",
-  rose:    "border-rose-500/30",
-};
-
-const ACCENT_TEXT: Record<AccentColor, string> = {
-  cyan:    "text-accent-cyan",
-  violet:  "text-accent-violet",
-  amber:   "text-accent-amber",
-  emerald: "text-accent-emerald",
-  rose:    "text-accent-rose",
-};
 
 export default function ArrayGrid({
   data, title, accent = "cyan", cellMeta, onCellEdit,
-  decimals = 1, compact = false, label, showIndices = true,
+  decimals = 1, compact = false, label, showIndices = true, heatmap = true,
 }: Props) {
   const rows = data.length;
   const cols = data[0]?.length ?? 0;
-  const cellSize = compact ? "min-w-[42px] h-[38px] text-xs" : "min-w-[56px] h-[48px] text-sm";
+  const cellSz = compact ? "min-w-[40px] h-[36px] text-[11px]" : "min-w-[54px] h-[46px] text-sm";
 
-  const [editingCell, setEditingCell] = useState<[number, number] | null>(null);
+  const [editCell, setEditCell] = useState<[number, number] | null>(null);
   const [editVal, setEditVal] = useState("");
+  const [hoverCell, setHoverCell] = useState<[number, number] | null>(null);
 
-  const handleDoubleClick = useCallback((r: number, c: number) => {
+  // Compute min/max for heatmap
+  const { vmin, vmax } = useMemo(() => {
+    const vals = data.flat().filter((v) => !isNaN(v) && isFinite(v));
+    return { vmin: Math.min(...vals, 0), vmax: Math.max(...vals, 1) };
+  }, [data]);
+
+  const startEdit = useCallback((r: number, c: number) => {
     if (!onCellEdit) return;
-    setEditingCell([r, c]);
-    setEditVal(fmt(data[r][c], decimals));
+    setEditCell([r, c]); setEditVal(fmt(data[r][c], decimals));
   }, [onCellEdit, data, decimals]);
 
   const commitEdit = useCallback(() => {
-    if (!editingCell || !onCellEdit) return;
+    if (!editCell || !onCellEdit) return;
     const n = parseFloat(editVal);
-    if (!isNaN(n)) onCellEdit(editingCell[0], editingCell[1], n);
-    setEditingCell(null);
-  }, [editingCell, editVal, onCellEdit]);
+    if (!isNaN(n)) onCellEdit(editCell[0], editCell[1], n);
+    setEditCell(null);
+  }, [editCell, editVal, onCellEdit]);
 
   return (
     <div className="flex flex-col gap-2">
-      {/* Header */}
+      {/* Header row */}
       {(title || label) && (
-        <div className="flex items-center gap-3">
-          {title && (
-            <span className={`font-mono text-xs font-semibold tracking-wide uppercase ${ACCENT_TEXT[accent]}`}>
-              {title}
-            </span>
-          )}
-          {label && (
-            <span className="font-mono text-[11px] text-txt-muted bg-surface-2 px-2 py-0.5 rounded">
-              {label}
-            </span>
-          )}
+        <div className="flex items-center gap-2">
+          {title && <span className={`font-mono text-xs font-bold tracking-wider uppercase accent-${accent}`}>{title}</span>}
+          {label && <span className="font-mono text-[10px] text-txt-muted bg-surface-2 px-2 py-0.5 rounded-md border border-edge">{label}</span>}
         </div>
       )}
 
-      <div className="relative">
+      <div className="glass-panel p-3 relative">
         {/* Column indices */}
         {showIndices && cols > 0 && (
-          <div className="flex ml-8 mb-1">
+          <div className="flex ml-8 mb-1 gap-[3px]">
             {Array.from({ length: cols }, (_, j) => (
-              <div key={j} className={`${compact ? "min-w-[42px]" : "min-w-[56px]"} text-center font-mono text-[10px] text-txt-muted`}>
-                {j}
-              </div>
+              <div key={j} className={`${compact ? "min-w-[40px]" : "min-w-[54px]"} text-center font-mono text-[9px] text-txt-muted`}>{j}</div>
             ))}
           </div>
         )}
 
-        {/* Grid rows */}
+        {/* Grid */}
         <div className="flex flex-col gap-[3px]">
           <AnimatePresence mode="popLayout">
             {data.map((row, i) => (
               <motion.div
-                key={`row-${i}`}
-                className="flex items-center gap-[3px]"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20 }}
-                transition={{ delay: i * 0.03, type: "spring", stiffness: 400, damping: 30 }}
+                key={`r${i}`} className="flex items-center gap-[3px]"
+                initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 12 }}
+                transition={{ delay: i * 0.025, type: "spring", stiffness: 400, damping: 30 }}
               >
-                {/* Row index */}
-                {showIndices && (
-                  <div className="w-7 text-right font-mono text-[10px] text-txt-muted pr-1 shrink-0">
-                    {i}
-                  </div>
-                )}
+                {showIndices && <div className="w-7 text-right font-mono text-[9px] text-txt-muted pr-1 shrink-0">{i}</div>}
 
-                {/* Cells */}
                 {row.map((val, j) => {
                   const meta = cellMeta?.(i, j) ?? {};
-                  const isEditing = editingCell?.[0] === i && editingCell?.[1] === j;
-                  const hlClass = meta.highlight ? `cell-highlight-${meta.highlight}` : "";
+                  const isEditing = editCell?.[0] === i && editCell?.[1] === j;
+                  const isHover = hoverCell?.[0] === i && hoverCell?.[1] === j;
                   const isNan = Number.isNaN(val);
+                  const hl = heatmap && !isNan && !meta.glow ? heatLevel(val, vmin, vmax) : 0;
+                  const heatClass = heatmap && !meta.glow ? `cell-heat-${accent}-${hl}` : "";
+                  const glowClass = meta.glow ? `cell-glow-${meta.glow}` : "";
 
                   return (
                     <motion.div
-                      key={`cell-${i}-${j}`}
-                      layout
+                      key={`c${i}-${j}`} layout
                       className={`
-                        ${cellSize} flex items-center justify-center
-                        rounded-md border font-mono font-medium
-                        transition-colors duration-200 select-none
-                        ${meta.dim ? "opacity-30" : ""}
-                        ${meta.computed ? ACCENT_BG[accent] + " " + ACCENT_BORDER[accent] : ""}
-                        ${hlClass}
-                        ${!hlClass && !meta.computed ? "bg-surface-1 border-edge" : ""}
-                        ${onCellEdit ? "cursor-pointer hover:border-accent-cyan/50" : ""}
-                        ${isNan ? "bg-surface-2 text-txt-muted italic" : ""}
+                        ${cellSz} flex items-center justify-center
+                        rounded-lg border-[1.5px] font-mono font-medium select-none
+                        transition-all duration-200
+                        ${meta.dim ? "opacity-20" : ""}
+                        ${glowClass}
+                        ${heatClass}
+                        ${!glowClass && !heatClass ? "bg-[var(--cell-base)]" : ""}
+                        ${!glowClass ? "border-[var(--cell-border)]" : ""}
+                        ${onCellEdit ? "cursor-text" : "cursor-default"}
+                        ${isHover && !isEditing ? "ring-1 ring-[var(--accent)]/30 z-10" : ""}
+                        ${isNan ? "bg-surface-2 text-txt-muted italic border-edge" : ""}
                       `}
-                      onDoubleClick={() => handleDoubleClick(i, j)}
-                      initial={{ scale: 0.8, opacity: 0 }}
-                      animate={{ scale: 1, opacity: meta.dim ? 0.3 : 1 }}
-                      transition={{ type: "spring", stiffness: 500, damping: 30, delay: (i * cols + j) * 0.01 }}
+                      onDoubleClick={() => startEdit(i, j)}
+                      onMouseEnter={() => setHoverCell([i, j])}
+                      onMouseLeave={() => setHoverCell(null)}
+                      initial={{ scale: 0.85, opacity: 0 }}
+                      animate={{ scale: 1, opacity: meta.dim ? 0.2 : 1 }}
+                      transition={{ type: "spring", stiffness: 500, damping: 28, delay: (i * cols + j) * 0.008 }}
                     >
                       {isEditing ? (
                         <input
-                          className="w-full h-full bg-transparent text-center text-accent-cyan outline-none font-mono text-sm"
-                          value={editVal}
-                          onChange={(e) => setEditVal(e.target.value)}
+                          className="w-full h-full bg-transparent text-center outline-none font-mono accent-cyan text-sm"
+                          value={editVal} onChange={(e) => setEditVal(e.target.value)}
                           onBlur={commitEdit}
-                          onKeyDown={(e) => { if (e.key === "Enter") commitEdit(); if (e.key === "Escape") setEditingCell(null); }}
+                          onKeyDown={(e) => { if (e.key === "Enter") commitEdit(); if (e.key === "Escape") setEditCell(null); }}
                           autoFocus
                         />
                       ) : (
                         <AnimatePresence mode="popLayout">
                           <motion.span
                             key={val}
-                            initial={{ y: -8, opacity: 0 }}
-                            animate={{ y: 0, opacity: 1 }}
-                            exit={{ y: 8, opacity: 0 }}
+                            initial={{ y: -6, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
+                            exit={{ y: 6, opacity: 0 }}
                             transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                            className={meta.highlight ? ACCENT_TEXT[meta.highlight] + " font-bold" : ""}
+                            className={meta.glow ? `accent-${meta.glow} font-bold` : ""}
                           >
                             {isNan ? "—" : fmt(val, decimals)}
                           </motion.span>
@@ -176,6 +144,13 @@ export default function ArrayGrid({
             ))}
           </AnimatePresence>
         </div>
+
+        {/* Hover tooltip */}
+        {hoverCell && !editCell && (
+          <div className="absolute -top-7 left-1/2 -translate-x-1/2 bg-surface-3 text-txt-primary font-mono text-[10px] px-2 py-0.5 rounded-md shadow-lg pointer-events-none whitespace-nowrap z-20 border border-edge">
+            [{hoverCell[0]}, {hoverCell[1]}] = {fmt(data[hoverCell[0]]?.[hoverCell[1]] ?? NaN, decimals)}
+          </div>
+        )}
       </div>
     </div>
   );

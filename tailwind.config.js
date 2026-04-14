@@ -7,41 +7,44 @@ export default {
       fontFamily: {
         sans: ['"Space Grotesk"', 'system-ui', 'sans-serif'],
         mono: ['"JetBrains Mono"', '"Fira Code"', 'monospace'],
+        display: ['"Space Grotesk"', 'system-ui', 'sans-serif'],
       },
       colors: {
-        surface: {
-          0: "var(--surface-0)",
-          1: "var(--surface-1)",
-          2: "var(--surface-2)",
-          3: "var(--surface-3)",
-        },
-        accent: {
-          cyan: "#06b6d4",
-          violet: "#8b5cf6",
-          amber: "#f59e0b",
-          emerald: "#10b981",
-          rose: "#f43f5e",
-        },
-        txt: {
-          primary: "var(--text-primary)",
-          secondary: "var(--text-secondary)",
-          muted: "var(--text-muted)",
-        },
-        edge: "var(--border-color)",
+        surface: { 0: "var(--s0)", 1: "var(--s1)", 2: "var(--s2)", 3: "var(--s3)", 4: "var(--s4)" },
+        txt: { primary: "var(--t1)", secondary: "var(--t2)", muted: "var(--t3)", inv: "var(--t-inv)" },
+        edge: { DEFAULT: "var(--border)", strong: "var(--border-strong)" },
+        // Dark-mode accents (vibrant)
+        d: { cyan: "#22d3ee", violet: "#a78bfa", amber: "#fbbf24", emerald: "#34d399", rose: "#fb7185" },
+        // Light-mode accents (deeper for contrast)
+        l: { cyan: "#0891b2", violet: "#7c3aed", amber: "#d97706", emerald: "#059669", rose: "#e11d48" },
       },
+      boxShadow: {
+        glow: "0 0 20px 4px var(--glow)",
+        "glow-sm": "0 0 10px 2px var(--glow)",
+        panel: "0 4px 32px -4px rgba(0,0,0,0.3), 0 0 1px 0 rgba(0,0,0,0.1)",
+        "panel-light": "0 4px 24px -4px rgba(0,0,0,0.08), 0 0 1px 0 rgba(0,0,0,0.06)",
+      },
+      backgroundImage: {
+        "grid-dark": "linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px)",
+        "grid-light": "linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.03) 1px, transparent 1px)",
+        "mesh-dark": "radial-gradient(ellipse 80% 60% at 50% 0%, rgba(6,182,212,0.08) 0%, transparent 70%), radial-gradient(ellipse 60% 50% at 80% 100%, rgba(139,92,246,0.06) 0%, transparent 70%)",
+        "mesh-light": "radial-gradient(ellipse 80% 60% at 50% 0%, rgba(8,145,178,0.06) 0%, transparent 70%), radial-gradient(ellipse 60% 50% at 80% 100%, rgba(124,58,237,0.04) 0%, transparent 70%)",
+      },
+      backgroundSize: { grid: "32px 32px" },
       animation: {
-        "glow-pulse": "glow-pulse 2s ease-in-out infinite",
-        "slide-up": "slide-up 0.4s ease-out",
+        "glow-pulse": "glow-pulse 2.5s ease-in-out infinite",
+        "slide-up": "slide-up 0.35s ease-out",
+        "fade-in": "fade-in 0.3s ease-out",
+        "float": "float 6s ease-in-out infinite",
       },
       keyframes: {
         "glow-pulse": {
-          "0%, 100%": { boxShadow: "0 0 8px 0px var(--glow-color)" },
-          "50%": { boxShadow: "0 0 20px 4px var(--glow-color)" },
+          "0%, 100%": { boxShadow: "0 0 8px 0px var(--glow)" },
+          "50%": { boxShadow: "0 0 24px 6px var(--glow)" },
         },
-        "slide-up": {
-          from: { opacity: 0, transform: "translateY(12px)" },
-          to: { opacity: 1, transform: "translateY(0)" },
-        },
+        "slide-up": { from: { opacity: 0, transform: "translateY(10px)" }, to: { opacity: 1, transform: "translateY(0)" }},
+        "fade-in": { from: { opacity: 0 }, to: { opacity: 1 }},
+        "float": { "0%, 100%": { transform: "translateY(0)" }, "50%": { transform: "translateY(-8px)" }},
       },
     },
   },

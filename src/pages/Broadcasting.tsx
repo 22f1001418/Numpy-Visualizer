@@ -55,7 +55,7 @@ export default function Broadcasting() {
   // Stages: 0=originals shown, 1=expanded shown, 2..2+cells=result building
   const resultCells = outR * outC;
   const totalSteps = 2 + resultCells;
-  const anim = useAnimation({ totalSteps, intervalMs: 350 });
+  const anim = useAnimation({ totalSteps, baseMs: 350 });
   const stage = anim.step < 1 ? 0 : anim.step < 2 ? 1 : 2;
   const cellIdx = Math.max(0, anim.step - 2);
 
@@ -122,11 +122,11 @@ export default function Broadcasting() {
             return (
               <>
                 <ArrayGrid data={partial} title="A + B" accent="amber" decimals={0}
-                  cellMeta={(r, c) => (r === cr && c === cc ? { highlight: "amber" } : {})} />
+                  cellMeta={(r, c) => (r === cr && c === cc ? { glow: "amber" } : {})} />
                 <FormulaBar accent="amber">
-                  [{cr},{cc}]: <span className="text-accent-cyan">{fmt(Aexp[cr]?.[cc] ?? 0, 0)}</span>
-                  {" + "}<span className="text-accent-violet">{fmt(Bexp[cr]?.[cc] ?? 0, 0)}</span>
-                  {" = "}<span className="text-accent-amber font-bold">{fmt(result[cr]?.[cc] ?? 0, 0)}</span>
+                  [{cr},{cc}]: <span className="accent-cyan">{fmt(Aexp[cr]?.[cc] ?? 0, 0)}</span>
+                  {" + "}<span className="accent-violet">{fmt(Bexp[cr]?.[cc] ?? 0, 0)}</span>
+                  {" = "}<span className="accent-amber font-bold">{fmt(result[cr]?.[cc] ?? 0, 0)}</span>
                 </FormulaBar>
               </>
             );
@@ -135,7 +135,7 @@ export default function Broadcasting() {
       )}
 
       {!compatible && (
-        <div className="text-accent-rose bg-accent-rose/10 border border-accent-rose/30 rounded-xl px-5 py-3 text-sm">
+        <div className="accent-rose accent-bg-rose border accent-border-rose rounded-xl px-5 py-3 text-sm accent-rose">
           Shapes ({rA}×{cA}) and ({rB}×{cB}) are not broadcast-compatible.
         </div>
       )}

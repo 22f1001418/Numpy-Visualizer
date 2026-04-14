@@ -34,7 +34,7 @@ export default function Reshape() {
     mode === "transpose" ? rows * cols :
     rows * cols;
 
-  const anim = useAnimation({ totalSteps: stepCount, intervalMs: 320 });
+  const anim = useAnimation({ totalSteps: stepCount, baseMs: 320 });
 
   const modeOpts = [
     { value: "reshape" as const, label: "Reshape" },
@@ -85,13 +85,13 @@ export default function Reshape() {
           <>
             <div className="flex gap-8 flex-wrap items-start">
               <ArrayGrid data={[flat]} title="1-D (source)" accent="cyan" decimals={0}
-                cellMeta={(_, c) => (c === anim.step ? { highlight: "cyan" } : c < anim.step ? { computed: true } : { dim: true })} />
+                cellMeta={(_, c) => (c === anim.step ? { glow: "cyan" } : c < anim.step ? { computed: true } : { dim: true })} />
               <ArrayGrid data={partial} title={`Reshaped (${newRows}×${newCols})`} accent="amber" decimals={0}
-                cellMeta={(r, c) => (r === tr && c === tc ? { highlight: "amber" } : {})} />
+                cellMeta={(r, c) => (r === tr && c === tc ? { glow: "amber" } : {})} />
             </div>
             <FormulaBar accent="cyan">
-              flat[<span className="text-accent-cyan">{anim.step}</span>] = {fmt(flat[anim.step], 0)}
-              {" → "} reshaped[<span className="text-accent-amber">{tr}</span>,<span className="text-accent-amber">{tc}</span>]
+              flat[<span className="accent-cyan">{anim.step}</span>] = {fmt(flat[anim.step], 0)}
+              {" → "} reshaped[<span className="accent-amber">{tr}</span>,<span className="accent-amber">{tc}</span>]
             </FormulaBar>
             <CodePanel code={`arr = np.arange(1, ${total + 1})\nreshaped = arr.reshape(${newRows}, ${newCols})`} />
           </>
@@ -106,12 +106,12 @@ export default function Reshape() {
           <>
             <div className="flex gap-8 flex-wrap items-start">
               <ArrayGrid data={srcMat} title="Original" accent="cyan" decimals={0}
-                cellMeta={(ri, ci) => (ri === r && ci === c ? { highlight: "cyan" } : { dim: true })} />
+                cellMeta={(ri, ci) => (ri === r && ci === c ? { glow: "cyan" } : { dim: true })} />
               <ArrayGrid data={srcT} title="Transposed (.T)" accent="violet" decimals={0}
-                cellMeta={(ri, ci) => (ri === c && ci === r ? { highlight: "violet" } : { dim: true })} />
+                cellMeta={(ri, ci) => (ri === c && ci === r ? { glow: "violet" } : { dim: true })} />
             </div>
             <FormulaBar accent="violet">
-              arr[{r},{c}] = <span className="text-accent-cyan">{fmt(srcMat[r]?.[c] ?? 0, 0)}</span>
+              arr[{r},{c}] = <span className="accent-cyan">{fmt(srcMat[r]?.[c] ?? 0, 0)}</span>
               {" → "} arr.T[{c},{r}]
             </FormulaBar>
             <CodePanel code="transposed = arr.T  # np.transpose(arr)" />
@@ -127,11 +127,11 @@ export default function Reshape() {
           <>
             <div className="flex gap-8 flex-wrap items-start">
               <ArrayGrid data={flatSrc} title={`2-D (${rows}×${cols})`} accent="cyan" decimals={0}
-                cellMeta={(r, c) => (r === fr && c === fc ? { highlight: "cyan" } : {})} />
+                cellMeta={(r, c) => (r === fr && c === fc ? { glow: "cyan" } : {})} />
               <ArrayGrid
                 data={[flatResult.map((v, i) => (i <= anim.step ? v : NaN))]}
                 title="Flattened" accent="amber" decimals={0}
-                cellMeta={(_, c) => (c === anim.step ? { highlight: "amber" } : {})} />
+                cellMeta={(_, c) => (c === anim.step ? { glow: "amber" } : {})} />
             </div>
             <FormulaBar accent="amber">
               arr[{fr},{fc}] = {fmt(flatSrc[fr]?.[fc] ?? 0, 0)} → flat[{anim.step}]

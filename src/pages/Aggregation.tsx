@@ -26,7 +26,7 @@ export default function Aggregation() {
   const result = useMemo(() => AGG_FNS[aggKey](arr, axis), [arr, aggKey, axis]);
 
   const nGroups = axis === 0 ? cols : axis === 1 ? rows : 1;
-  const anim = useAnimation({ totalSteps: nGroups, intervalMs: 550 });
+  const anim = useAnimation({ totalSteps: nGroups, baseMs: 550 });
 
   const accentColor = axis === 0 ? "violet" : axis === 1 ? "amber" : "rose";
 
@@ -51,9 +51,9 @@ export default function Aggregation() {
       <div className="flex gap-8 flex-wrap items-start">
         <ArrayGrid data={arr} title={`Input (${rows}×${cols})`} accent="cyan" decimals={0}
           cellMeta={(r, c) => {
-            if (axis === 0 && c === anim.step) return { highlight: "violet" };
-            if (axis === 1 && r === anim.step) return { highlight: "amber" };
-            if (axis === null) return { highlight: "rose" };
+            if (axis === 0 && c === anim.step) return { glow: "violet" };
+            if (axis === 1 && r === anim.step) return { glow: "amber" };
+            if (axis === null) return { glow: "rose" };
             return { dim: true };
           }} />
 
@@ -79,7 +79,7 @@ export default function Aggregation() {
         return (
           <FormulaBar accent={accentColor}>
             {aggKey}([{vals.slice(0, 8).map((v) => fmt(v, 0)).join(", ")}
-            {vals.length > 8 ? ", …" : ""}]) = <span className={`text-accent-${accentColor} font-bold`}>{fmt(gVal as number, 2)}</span>
+            {vals.length > 8 ? ", …" : ""}]) = <span className="accent-amber font-bold">{fmt(gVal as number, 2)}</span>
           </FormulaBar>
         );
       })()}
@@ -97,7 +97,7 @@ export default function Aggregation() {
                   initial={{ height: 0 }}
                   animate={{ height: active ? `${h}%` : "0%" }}
                   transition={{ type: "spring", stiffness: 200, damping: 20 }}
-                  className={`w-full rounded-t ${active ? `bg-accent-${accentColor}` : "bg-surface-2"}`}
+                  className={`w-full rounded-t ${active ? "bg-[var(--accent)]" : "bg-surface-2"}`}
                   style={{ minHeight: active ? 4 : 0 }}
                 />
                 <span className="text-[10px] font-mono text-txt-muted">{axis === 0 ? `c${i}` : `r${i}`}</span>

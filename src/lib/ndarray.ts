@@ -1,12 +1,11 @@
 /**
- * Lightweight NumPy-like matrix operations in TypeScript.
- * Uses number[][] for 2-D and number[] for 1-D.
+ * NumPy-like matrix ops in TypeScript + parse utility for user input.
  */
 
 export type Matrix = number[][];
 export type Vector = number[];
 
-// ── Seeded PRNG (xoshiro128**) ────────────────────────────
+// ── PRNG ──────────────────────────────────────────────────
 function splitmix32(a: number) {
   return () => {
     a |= 0; a = (a + 0x9e3779b9) | 0;
@@ -15,194 +14,157 @@ function splitmix32(a: number) {
     return ((t = t ^ (t >>> 15)) >>> 0) / 4294967296;
   };
 }
-
 export function seededRandom(seed: number) {
   const rng = splitmix32(seed);
-  return {
-    random: () => rng(),
-    randint: (lo: number, hi: number) => Math.floor(rng() * (hi - lo)) + lo,
-  };
+  return { random: () => rng(), randint: (lo: number, hi: number) => Math.floor(rng() * (hi - lo)) + lo };
 }
 
 // ── Creation ──────────────────────────────────────────────
-export function zeros(r: number, c: number): Matrix {
-  return Array.from({ length: r }, () => Array(c).fill(0));
-}
-
-export function ones(r: number, c: number): Matrix {
-  return Array.from({ length: r }, () => Array(c).fill(1));
-}
-
-export function arange(start: number, stop: number, step = 1): Vector {
-  const out: number[] = [];
-  for (let i = start; i < stop; i += step) out.push(i);
-  return out;
-}
-
-export function randMatrix(r: number, c: number, lo: number, hi: number, seed: number): Matrix {
+export const zeros = (r: number, c: number): Matrix => Array.from({ length: r }, () => Array(c).fill(0));
+export const arange = (start: number, stop: number, step = 1): Vector => {
+  const out: number[] = []; for (let i = start; i < stop; i += step) out.push(i); return out;
+};
+export const randMatrix = (r: number, c: number, lo: number, hi: number, seed: number): Matrix => {
   const { randint } = seededRandom(seed);
-  return Array.from({ length: r }, () =>
-    Array.from({ length: c }, () => randint(lo, hi))
-  );
+  return Array.from({ length: r }, () => Array.from({ length: c }, () => randint(lo, hi)));
+};
+export const randVector = (n: number, lo: number, hi: number, seed: number): Vector => {
+  const { randint } = seededRandom(seed); return Array.from({ length: n }, () => randint(lo, hi));
+};
+
+// ── Parse user input ──────────────────────────────────────
+/**
+ * Parse text into a Matrix. Accepts:
+ *   [[1,2],[3,4]]   — JSON / NumPy-like
+ *   1 2\n3 4        — space/tab separated rows
+ *   1,2\n3,4        — CSV rows
+ * Returns { ok: true, data } or { ok: false, error }.
+ */
+export function parseMatrix(text: string): { ok: true; data: Matrix } | { ok: false; error: string } {
+  const trimmed = text.trim();
+  if (!trimmed) return { ok: false, error: "Empty input" };
+
+  // Try JSON parse first
+  try {
+    const parsed = JSON.parse(trimmed);
+    if (Array.isArray(parsed)) {
+      // 1-D → wrap
+      if (parsed.length > 0 && typeof parsed[0] === "number") {
+        if (parsed.every((x: any) => typeof x === "number" && isFinite(x)))
+          return { ok: true, data: [parsed as number[]] };
+      }
+      // 2-D
+      if (parsed.every((row: any) => Array.isArray(row) && row.every((x: any) => typeof x === "number" && isFinite(x)))) {
+        const cols = (parsed[0] as number[]).length;
+        if (parsed.every((row: any) => row.length === cols))
+          return { ok: true, data: parsed as Matrix };
+        return { ok: false, error: "Rows have different lengths" };
+      }
+    }
+  } catch { /* not JSON, try text formats */ }
+
+  // Text rows
+  const lines = trimmed.split(/\n/).map((l) => l.trim()).filter(Boolean);
+  const rows: number[][] = [];
+  for (const line of lines) {
+    // Remove brackets, split on comma/space/tab
+    const clean = line.replace(/[\[\]()]/g, "").trim();
+    const nums = clean.split(/[,\s\t]+/).filter(Boolean).map(Number);
+    if (nums.some(isNaN)) return { ok: false, error: `Invalid number in: "${line}"` };
+    rows.push(nums);
+  }
+  if (rows.length === 0) return { ok: false, error: "No numbers found" };
+  const cols = rows[0].length;
+  if (!rows.every((r) => r.length === cols)) return { ok: false, error: "Rows have different lengths" };
+  return { ok: true, data: rows };
 }
 
-export function randVector(n: number, lo: number, hi: number, seed: number): Vector {
-  const { randint } = seededRandom(seed);
-  return Array.from({ length: n }, () => randint(lo, hi));
-}
-
-// ── Shape helpers ─────────────────────────────────────────
-export function shape(m: Matrix): [number, number] {
-  return [m.length, m[0]?.length ?? 0];
-}
-
-export function reshape(flat: Vector, r: number, c: number): Matrix {
+// ── Shape ─────────────────────────────────────────────────
+export const shape = (m: Matrix): [number, number] => [m.length, m[0]?.length ?? 0];
+export const reshape = (flat: Vector, r: number, c: number): Matrix => {
   const out: Matrix = [];
   for (let i = 0; i < r; i++) out.push(flat.slice(i * c, (i + 1) * c));
   return out;
-}
-
-export function flatten(m: Matrix): Vector {
-  return m.flat();
-}
-
-export function transpose(m: Matrix): Matrix {
+};
+export const flatten = (m: Matrix): Vector => m.flat();
+export const transpose = (m: Matrix): Matrix => {
   const [r, c] = shape(m);
-  return Array.from({ length: c }, (_, j) =>
-    Array.from({ length: r }, (_, i) => m[i][j])
-  );
-}
+  return Array.from({ length: c }, (_, j) => Array.from({ length: r }, (_, i) => m[i][j]));
+};
 
 // ── Element-wise ──────────────────────────────────────────
 type BinOp = (a: number, b: number) => number;
+const ewise = (a: Matrix, b: Matrix, fn: BinOp): Matrix => a.map((row, i) => row.map((v, j) => fn(v, b[i][j])));
+export const add      = (a: Matrix, b: Matrix) => ewise(a, b, (x, y) => x + y);
+export const subtract = (a: Matrix, b: Matrix) => ewise(a, b, (x, y) => x - y);
+export const multiply = (a: Matrix, b: Matrix) => ewise(a, b, (x, y) => x * y);
+export const divide   = (a: Matrix, b: Matrix) => ewise(a, b, (x, y) => y ? x / y : NaN);
+export const power    = (a: Matrix, b: Matrix) => ewise(a, b, (x, y) => Math.pow(x, y));
+export const mod      = (a: Matrix, b: Matrix) => ewise(a, b, (x, y) => x % y);
+export const greater  = (a: Matrix, b: Matrix) => ewise(a, b, (x, y) => x > y ? 1 : 0);
+export const scalarOp = (m: Matrix, s: number, fn: BinOp): Matrix => m.map((row) => row.map((v) => fn(v, s)));
 
-function elementwise(a: Matrix, b: Matrix, fn: BinOp): Matrix {
-  return a.map((row, i) => row.map((v, j) => fn(v, b[i][j])));
-}
-
-export const add      = (a: Matrix, b: Matrix) => elementwise(a, b, (x, y) => x + y);
-export const subtract = (a: Matrix, b: Matrix) => elementwise(a, b, (x, y) => x - y);
-export const multiply = (a: Matrix, b: Matrix) => elementwise(a, b, (x, y) => x * y);
-export const divide   = (a: Matrix, b: Matrix) => elementwise(a, b, (x, y) => y !== 0 ? x / y : NaN);
-export const power    = (a: Matrix, b: Matrix) => elementwise(a, b, (x, y) => Math.pow(x, y));
-export const mod      = (a: Matrix, b: Matrix) => elementwise(a, b, (x, y) => x % y);
-export const greater  = (a: Matrix, b: Matrix) => elementwise(a, b, (x, y) => x > y ? 1 : 0);
-
-export function scalarOp(m: Matrix, s: number, fn: BinOp): Matrix {
-  return m.map((row) => row.map((v) => fn(v, s)));
-}
-
-// ── Matrix multiply ───────────────────────────────────────
+// ── Matmul ────────────────────────────────────────────────
 export function matmul(a: Matrix, b: Matrix): Matrix {
-  const [rA, cA] = shape(a);
-  const [, cB] = shape(b);
-  const out = zeros(rA, cB);
-  for (let i = 0; i < rA; i++)
-    for (let j = 0; j < cB; j++)
-      for (let k = 0; k < cA; k++)
-        out[i][j] += a[i][k] * b[k][j];
+  const [rA, cA] = shape(a); const [, cB] = shape(b); const out = zeros(rA, cB);
+  for (let i = 0; i < rA; i++) for (let j = 0; j < cB; j++) for (let k = 0; k < cA; k++) out[i][j] += a[i][k] * b[k][j];
   return out;
 }
-
-export function dot(a: Vector, b: Vector): number {
-  return a.reduce((s, v, i) => s + v * b[i], 0);
-}
+export const dot = (a: Vector, b: Vector): number => a.reduce((s, v, i) => s + v * b[i], 0);
 
 // ── Aggregations ──────────────────────────────────────────
 export function sumAxis(m: Matrix, axis: 0 | 1 | null): Vector | number {
   const [r, c] = shape(m);
   if (axis === null) return m.flat().reduce((s, v) => s + v, 0);
-  if (axis === 0) return Array.from({ length: c }, (_, j) =>
-    m.reduce((s, row) => s + row[j], 0));
+  if (axis === 0) return Array.from({ length: c }, (_, j) => m.reduce((s, row) => s + row[j], 0));
   return m.map((row) => row.reduce((s, v) => s + v, 0));
 }
-
 export function meanAxis(m: Matrix, axis: 0 | 1 | null): Vector | number {
-  const [r, c] = shape(m);
-  const s = sumAxis(m, axis);
+  const [r, c] = shape(m); const s = sumAxis(m, axis);
   if (axis === null) return (s as number) / (r * c);
   if (axis === 0) return (s as Vector).map((v) => v / r);
   return (s as Vector).map((v) => v / c);
 }
-
 export function maxAxis(m: Matrix, axis: 0 | 1 | null): Vector | number {
-  const [r, c] = shape(m);
   if (axis === null) return Math.max(...m.flat());
-  if (axis === 0) return Array.from({ length: c }, (_, j) =>
-    Math.max(...m.map((row) => row[j])));
+  if (axis === 0) return Array.from({ length: shape(m)[1] }, (_, j) => Math.max(...m.map((r) => r[j])));
   return m.map((row) => Math.max(...row));
 }
-
 export function minAxis(m: Matrix, axis: 0 | 1 | null): Vector | number {
-  const [r, c] = shape(m);
   if (axis === null) return Math.min(...m.flat());
-  if (axis === 0) return Array.from({ length: c }, (_, j) =>
-    Math.min(...m.map((row) => row[j])));
+  if (axis === 0) return Array.from({ length: shape(m)[1] }, (_, j) => Math.min(...m.map((r) => r[j])));
   return m.map((row) => Math.min(...row));
 }
 
-// ── Slicing ───────────────────────────────────────────────
-export function slice2d(
-  m: Matrix,
-  rowStart: number, rowEnd: number,
-  colStart: number, colEnd: number
-): Matrix {
-  return m.slice(rowStart, rowEnd).map((r) => r.slice(colStart, colEnd));
-}
+// ── Slicing / stacking / sorting / cumulative ─────────────
+export const slice2d = (m: Matrix, rS: number, rE: number, cS: number, cE: number): Matrix =>
+  m.slice(rS, rE).map((r) => r.slice(cS, cE));
 
-// ── Broadcasting (simple: scalar or matching dim-1) ───────
 export function broadcastAdd(a: Matrix, b: Matrix): Matrix {
-  const [rA, cA] = shape(a);
-  const [rB, cB] = shape(b);
-  const rOut = Math.max(rA, rB);
-  const cOut = Math.max(cA, cB);
-  const out = zeros(rOut, cOut);
-  for (let i = 0; i < rOut; i++)
-    for (let j = 0; j < cOut; j++)
-      out[i][j] = a[i % rA][j % cA] + b[i % rB][j % cB];
+  const [rA, cA] = shape(a); const [rB, cB] = shape(b);
+  const rO = Math.max(rA, rB); const cO = Math.max(cA, cB);
+  const out = zeros(rO, cO);
+  for (let i = 0; i < rO; i++) for (let j = 0; j < cO; j++) out[i][j] = a[i % rA][j % cA] + b[i % rB][j % cB];
   return out;
 }
+export const vstack = (a: Matrix, b: Matrix): Matrix => [...a.map((r) => [...r]), ...b.map((r) => [...r])];
+export const hstack = (a: Matrix, b: Matrix): Matrix => a.map((row, i) => [...row, ...b[i]]);
+export const sort = (v: Vector): Vector => [...v].sort((a, b) => a - b);
+export const argsort = (v: Vector): Vector => v.map((_, i) => i).sort((a, b) => v[a] - v[b]);
+export const cumsum = (v: Vector): Vector => { const o: Vector = []; let s = 0; for (const x of v) { s += x; o.push(s); } return o; };
+export const cumprod = (v: Vector): Vector => { const o: Vector = []; let p = 1; for (const x of v) { p *= x; o.push(p); } return o; };
+export const diff = (v: Vector): Vector => v.slice(1).map((x, i) => x - v[i]);
 
-// ── Stacking ──────────────────────────────────────────────
-export function vstack(a: Matrix, b: Matrix): Matrix {
-  return [...a.map((r) => [...r]), ...b.map((r) => [...r])];
-}
-
-export function hstack(a: Matrix, b: Matrix): Matrix {
-  return a.map((row, i) => [...row, ...b[i]]);
-}
-
-// ── Sorting ───────────────────────────────────────────────
-export function sort(v: Vector): Vector {
-  return [...v].sort((a, b) => a - b);
-}
-
-export function argsort(v: Vector): Vector {
-  return v.map((_, i) => i).sort((a, b) => v[a] - v[b]);
-}
-
-// ── Cumulative ────────────────────────────────────────────
-export function cumsum(v: Vector): Vector {
-  const out: Vector = [];
-  let s = 0;
-  for (const x of v) { s += x; out.push(s); }
-  return out;
-}
-
-export function cumprod(v: Vector): Vector {
-  const out: Vector = [];
-  let p = 1;
-  for (const x of v) { p *= x; out.push(p); }
-  return out;
-}
-
-export function diff(v: Vector): Vector {
-  return v.slice(1).map((x, i) => x - v[i]);
-}
-
-// ── Formatting ────────────────────────────────────────────
-export function fmt(n: number, decimals = 1): string {
+// ── Format ────────────────────────────────────────────────
+export const fmt = (n: number, d = 1): string => {
   if (Number.isNaN(n)) return "—";
   if (!Number.isFinite(n)) return "∞";
-  return Number.isInteger(n) ? n.toString() : n.toFixed(decimals);
+  return Number.isInteger(n) ? n.toString() : n.toFixed(d);
+};
+
+/** Returns 0–4 intensity bucket for heatmap coloring */
+export function heatLevel(val: number, min: number, max: number): number {
+  if (Number.isNaN(val) || min === max) return 0;
+  const t = (val - min) / (max - min);
+  return Math.min(4, Math.floor(t * 5));
 }
