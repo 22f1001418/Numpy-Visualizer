@@ -13,9 +13,7 @@ export default {
         surface: { 0: "var(--s0)", 1: "var(--s1)", 2: "var(--s2)", 3: "var(--s3)", 4: "var(--s4)" },
         txt: { primary: "var(--t1)", secondary: "var(--t2)", muted: "var(--t3)", inv: "var(--t-inv)" },
         edge: { DEFAULT: "var(--border)", strong: "var(--border-strong)" },
-        // Dark-mode accents (vibrant)
         d: { cyan: "#22d3ee", violet: "#a78bfa", amber: "#fbbf24", emerald: "#34d399", rose: "#fb7185" },
-        // Light-mode accents (deeper for contrast)
         l: { cyan: "#0891b2", violet: "#7c3aed", amber: "#d97706", emerald: "#059669", rose: "#e11d48" },
       },
       boxShadow: {
@@ -35,7 +33,6 @@ export default {
         "glow-pulse": "glow-pulse 2.5s ease-in-out infinite",
         "slide-up": "slide-up 0.35s ease-out",
         "fade-in": "fade-in 0.3s ease-out",
-        "float": "float 6s ease-in-out infinite",
       },
       keyframes: {
         "glow-pulse": {
@@ -44,7 +41,6 @@ export default {
         },
         "slide-up": { from: { opacity: 0, transform: "translateY(10px)" }, to: { opacity: 1, transform: "translateY(0)" }},
         "fade-in": { from: { opacity: 0 }, to: { opacity: 1 }},
-        "float": { "0%, 100%": { transform: "translateY(0)" }, "50%": { transform: "translateY(-8px)" }},
       },
     },
   },

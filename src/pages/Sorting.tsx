@@ -1,50 +1,48 @@
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
+import { ArrowUpDown } from "lucide-react";
 import ArrayGrid from "../components/ArrayGrid";
 import AnimControls from "../components/AnimControls";
 import CodePanel from "../components/CodePanel";
-import { PageShell, Intro, FormulaBar, Slider, Select } from "../components/UI";
+import { PageShell, FormulaBar, Slider, Select } from "../components/UI";
 import { useAnimation } from "../hooks/useAnimation";
 import { randVector, sort, argsort, fmt } from "../lib/ndarray";
 
 type Op = "sort" | "argsort" | "unique";
 
+const DESCRIPTION = "Sorting rearranges elements in ascending order. argsort returns the indices that would sort the array \u2014 useful for reordering related data. unique extracts distinct values and their counts. The animation reveals each position of the sorted output one at a time, showing where each value came from in the original array.";
+
 export default function Sorting() {
   const [op, setOp] = useState<Op>("sort");
   const [n, setN] = useState(10);
-  const [seed, setSeed] = useState(21);
 
-  const arr = useMemo(() => randVector(n, 1, 50, seed), [n, seed]);
+  const arr = useMemo(() => randVector(n, 1, 50, 21), [n]);
   const sorted = useMemo(() => sort(arr), [arr]);
   const indices = useMemo(() => argsort(arr), [arr]);
   const maxVal = Math.max(...arr, 1);
 
-  // Unique
   const uniqMap = useMemo(() => {
     const u = [...new Set(arr)].sort((a, b) => a - b);
     const counts = u.map((v) => arr.filter((x) => x === v).length);
     return { values: u, counts };
   }, [arr]);
 
-  const anim = useAnimation({ totalSteps: op === "unique" ? uniqMap.values.length : n, intervalMs: 400 });
+  const anim = useAnimation({ totalSteps: op === "unique" ? uniqMap.values.length : n, baseMs: 600 });
 
   return (
-    <PageShell title="Sorting" accent="amber">
-      <Intro what="np.sort rearranges elements in ascending order. argsort returns the indices that would sort the array. unique finds distinct values." why="Sorting is the basis of ranking, percentile computation, and efficient searching. argsort is particularly important for reordering related data by a computed metric." how="Press Play to watch elements rearrange. The bar chart shows the visual progression from unsorted to sorted order." />
+    <PageShell title="Sorting" icon={<ArrowUpDown size={22} />} accent="amber" description={DESCRIPTION}>
       <div className="flex flex-wrap gap-4 items-end">
-        <Select value={op} onChange={setOp as any}
+        <Select label="Operation" value={op} onChange={setOp as any}
           options={[{ value: "sort", label: "sort" }, { value: "argsort", label: "argsort" },
                     { value: "unique", label: "unique" }]} />
-        <Slider value={n} min={5} max={16} onChange={setN} />
-        <Slider value={seed} min={1} max={99} onChange={setSeed} />
+        <Slider label="Elements" value={n} min={5} max={16} onChange={setN} />
       </div>
 
-      <AnimControls {...anim} onToggle={anim.toggle}
-        onReset={anim.reset} />
+      <AnimControls {...anim} onToggle={anim.toggle} onReset={anim.reset} label="element" />
 
       {op === "sort" && (
         <>
-          {/* Bar chart: original faded, sorted building */}
+          {/* Bar chart */}
           <div className="flex items-end gap-[3px] h-40 px-1">
             {arr.map((v, i) => {
               const h = (v / maxVal) * 100;
@@ -54,10 +52,8 @@ export default function Sorting() {
               return (
                 <div key={i} className="flex-1 flex flex-col items-center gap-1">
                   <div className="w-full relative" style={{ height: "100%" }}>
-                    {/* Original bar (faded) */}
                     <div className="absolute bottom-0 w-full rounded-t bg-surface-2 transition-all"
                       style={{ height: `${h}%` }} />
-                    {/* Sorted bar (overlay) */}
                     <motion.div
                       className={`absolute bottom-0 w-full rounded-t ${active ? "bg-[var(--accent)]" : "bg-transparent"}`}
                       initial={{ height: 0 }}
@@ -98,7 +94,7 @@ export default function Sorting() {
           </div>
           <FormulaBar accent="violet">
             Position {anim.step}: index = <span className="accent-violet">{indices[anim.step]}</span>
-            {" → "} value = <span className="accent-amber font-bold">{fmt(arr[indices[anim.step]], 0)}</span>
+            {" -> "} value = <span className="accent-amber font-bold">{fmt(arr[indices[anim.step]], 0)}</span>
           </FormulaBar>
           <CodePanel code={`indices = np.argsort(arr)\nsorted = arr[indices]`} />
         </>

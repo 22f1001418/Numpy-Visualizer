@@ -1,38 +1,40 @@
 import { useState, useMemo } from "react";
+import { Layers } from "lucide-react";
 import ArrayGrid from "../components/ArrayGrid";
 import AnimControls from "../components/AnimControls";
 import CodePanel from "../components/CodePanel";
-import { PageShell, Intro, FormulaBar, Slider, Select } from "../components/UI";
+import { PageShell, FormulaBar, Slider, Select } from "../components/UI";
 import { useAnimation } from "../hooks/useAnimation";
-import { randMatrix, vstack, hstack, shape, fmt, type Matrix } from "../lib/ndarray";
+import { randMatrix, vstack, hstack, shape, type Matrix } from "../lib/ndarray";
 
-type Op = "vstack" | "hstack" | "split_v" | "split_h";
+type Op = "vstack" | "hstack";
+
+const DESCRIPTION = "Stacking combines two arrays along a chosen axis. vstack (vertical) stacks rows on top of each other \u2014 both arrays must have the same number of columns. hstack (horizontal) places columns side by side \u2014 both must have the same number of rows. The animation reveals the output one row (or column) at a time, highlighting which source array each slice comes from.";
 
 export default function Stacking() {
   const [op, setOp] = useState<Op>("vstack");
-  const [seed, setSeed] = useState(3);
   const [sharedDim, setSharedDim] = useState(4);
   const [dimA, setDimA] = useState(2);
   const [dimB, setDimB] = useState(3);
 
   const A = useMemo(() => randMatrix(
-    op === "hstack" || op === "split_h" ? sharedDim : dimA,
-    op === "vstack" || op === "split_v" ? sharedDim : dimA,
-    1, 9, seed
-  ), [op, sharedDim, dimA, seed]);
+    op === "hstack" ? sharedDim : dimA,
+    op === "vstack" ? sharedDim : dimA,
+    1, 9, 3
+  ), [op, sharedDim, dimA]);
 
   const B = useMemo(() => randMatrix(
-    op === "hstack" || op === "split_h" ? sharedDim : dimB,
-    op === "vstack" || op === "split_v" ? sharedDim : dimB,
-    10, 19, seed + 50
-  ), [op, sharedDim, dimB, seed]);
+    op === "hstack" ? sharedDim : dimB,
+    op === "vstack" ? sharedDim : dimB,
+    10, 19, 53
+  ), [op, sharedDim, dimB]);
 
-  const isVert = op === "vstack" || op === "split_v";
+  const isVert = op === "vstack";
   const result = useMemo(() => isVert ? vstack(A, B) : hstack(A, B), [A, B, isVert]);
   const [rR, cR] = shape(result);
 
   const totalSteps = isVert ? rR : cR;
-  const anim = useAnimation({ totalSteps, intervalMs: 450 });
+  const anim = useAnimation({ totalSteps, baseMs: 700 });
 
   const [rA] = shape(A);
   const origin = isVert
@@ -40,22 +42,20 @@ export default function Stacking() {
     : (anim.step < shape(A)[1] ? "A" : "B");
 
   return (
-    <PageShell title="Stacking & Splitting" accent="violet">
-      <Intro what="Stacking combines multiple arrays into one along a specified axis. Splitting does the reverse — dividing one array into parts." why="These operations are essential when assembling datasets from multiple sources, building feature matrices, or splitting data into train/test sets." how="Press Play to watch rows or columns assemble into the result one by one, with the source array indicated at each step." />
+    <PageShell title="Stacking & Splitting" icon={<Layers size={22} />} accent="violet" description={DESCRIPTION}>
       <div className="flex flex-wrap gap-4 items-end">
-        <Select value={op} onChange={setOp as any}
+        <Select label="Operation" value={op} onChange={setOp as any}
           options={[
             { value: "vstack", label: "vstack (vertical)" },
             { value: "hstack", label: "hstack (horizontal)" },
           ]} />
-        <Slider value={sharedDim} min={2} max={6} onChange={setSharedDim} />
-        <Slider value={dimA} min={1} max={4} onChange={setDimA} />
-        <Slider value={dimB} min={1} max={4} onChange={setDimB} />
-        <Slider value={seed} min={1} max={99} onChange={setSeed} />
+        <Slider label="Shared dim" value={sharedDim} min={2} max={6} onChange={setSharedDim} />
+        <Slider label="A size" value={dimA} min={1} max={4} onChange={setDimA} />
+        <Slider label="B size" value={dimB} min={1} max={4} onChange={setDimB} />
       </div>
 
-      <AnimControls {...anim} onToggle={anim.toggle}
-        onReset={anim.reset} />
+      <AnimControls {...anim} onToggle={anim.toggle} onReset={anim.reset}
+        label={isVert ? "row" : "col"} />
 
       <div className="flex gap-6 flex-wrap items-start">
         <ArrayGrid data={A} title="A" accent="cyan" decimals={0} />
@@ -65,7 +65,7 @@ export default function Stacking() {
             ? result.map((row, i) => (i <= anim.step ? row : row.map(() => NaN)))
             : result.map((row) => row.map((v, j) => (j <= anim.step ? v : NaN)))
           }
-          title={`${op} → (${rR}×${cR})`}
+          title={`${op} -> (${rR}x${cR})`}
           accent="amber" decimals={0}
           cellMeta={(r, c) => {
             const active = isVert ? r === anim.step : c === anim.step;

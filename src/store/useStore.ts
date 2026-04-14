@@ -7,32 +7,35 @@ export type PageId =
 
 export type Accent = "cyan" | "violet" | "amber" | "emerald" | "rose";
 
-// iconName refers to a Lucide icon — rendered in Sidebar/Home via <Icon>
+export type IconKey =
+  | "plus" | "grid3x3" | "layoutGrid" | "radio" | "scissors"
+  | "layers" | "barChart3" | "arrowUpDown" | "trendingUp";
+
 export interface NavItem {
   id: PageId;
   label: string;
-  iconName: string;       // lucide icon key
+  iconKey: IconKey;
   accent: Accent;
   desc: string;
   category: "core" | "transform" | "analysis";
 }
 
 export const NAV_ITEMS: NavItem[] = [
-  { id: "elementwise",  label: "Element-wise Ops",     iconName: "plus-circle",    accent: "violet",  desc: "Add, multiply, compare cell by cell",             category: "core" },
-  { id: "matmul",       label: "Matrix Multiply",      iconName: "grid-3x3",       accent: "amber",   desc: "Step through A @ B with dot-product breakdown",   category: "core" },
-  { id: "reshape",      label: "Reshape & Transpose",  iconName: "move-3d",        accent: "cyan",    desc: "Watch elements flow into new shapes",              category: "transform" },
-  { id: "broadcasting", label: "Broadcasting",          iconName: "radio",          accent: "rose",    desc: "See how arrays stretch to fit each other",         category: "transform" },
-  { id: "slicing",      label: "Slicing & Indexing",    iconName: "scissors",       accent: "emerald", desc: "Extract sub-arrays, masks, and selections",        category: "transform" },
-  { id: "stacking",     label: "Stacking & Splitting",  iconName: "layers",         accent: "violet",  desc: "Combine and divide arrays along axes",             category: "transform" },
-  { id: "aggregation",  label: "Aggregations",          iconName: "bar-chart-2",    accent: "cyan",    desc: "Collapse axes with sum, mean, max",                category: "analysis" },
-  { id: "sorting",      label: "Sorting",               iconName: "arrow-up-down",  accent: "amber",   desc: "Sort, argsort, and unique with animation",         category: "analysis" },
-  { id: "cumulative",   label: "Cumulative Ops",        iconName: "trending-up",    accent: "rose",    desc: "Running totals with cumsum, cumprod, diff",        category: "analysis" },
+  { id: "elementwise",  label: "Element-wise",         iconKey: "plus",        accent: "violet",  desc: "Add, multiply, compare — cell by cell",            category: "core" },
+  { id: "matmul",       label: "Matrix Multiply",      iconKey: "grid3x3",     accent: "amber",   desc: "Step-through A @ B with dot-product drill-down",   category: "core" },
+  { id: "reshape",      label: "Reshape & Transpose",  iconKey: "layoutGrid",  accent: "cyan",    desc: "Watch elements flow into new shapes",              category: "transform" },
+  { id: "broadcasting", label: "Broadcasting",          iconKey: "radio",       accent: "rose",    desc: "See arrays stretch to fit each other",             category: "transform" },
+  { id: "slicing",      label: "Slicing & Indexing",    iconKey: "scissors",    accent: "emerald", desc: "Highlight sub-arrays and boolean masks",           category: "transform" },
+  { id: "stacking",     label: "Stacking & Splitting",  iconKey: "layers",      accent: "violet",  desc: "vstack, hstack, concatenate, split",               category: "transform" },
+  { id: "aggregation",  label: "Aggregations",          iconKey: "barChart3",   accent: "cyan",    desc: "Collapse axes — sum, mean, max, std",              category: "analysis" },
+  { id: "sorting",      label: "Sorting",               iconKey: "arrowUpDown", accent: "amber",   desc: "sort, argsort, unique — animated",                 category: "analysis" },
+  { id: "cumulative",   label: "Cumulative Ops",        iconKey: "trendingUp",  accent: "rose",    desc: "cumsum, cumprod, diff with live charts",           category: "analysis" },
 ];
 
-export const CATEGORIES = [
-  { key: "core",      label: "Core Operations" },
+export const CATEGORIES: { key: string; label: string }[] = [
+  { key: "core", label: "Core Operations" },
   { key: "transform", label: "Shape & Transform" },
-  { key: "analysis",  label: "Analysis" },
+  { key: "analysis", label: "Analysis & Stats" },
 ];
 
 interface AppState {
@@ -58,3 +61,12 @@ export const useStore = create<AppState>((set) => ({
     }),
   toggleSidebar: () => set((s) => ({ sidebarOpen: !s.sidebarOpen })),
 }));
+
+/** Returns the right CSS class prefix for the current theme's accent */
+export function accentClass(a: Accent, type: "text" | "bg" | "border" | "glow" | "heat"): string {
+  if (type === "text") return `accent-${a}`;
+  if (type === "bg") return `accent-bg-${a}`;
+  if (type === "border") return `accent-border-${a}`;
+  if (type === "glow") return `cell-glow-${a}`;
+  return `cell-heat-${a}`;
+}

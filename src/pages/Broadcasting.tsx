@@ -1,8 +1,9 @@
 import { useState, useMemo } from "react";
+import { Radio } from "lucide-react";
 import ArrayGrid from "../components/ArrayGrid";
 import AnimControls from "../components/AnimControls";
 import CodePanel from "../components/CodePanel";
-import { PageShell, Intro, FormulaBar, ShapeBadge, Slider, Select, Divider } from "../components/UI";
+import { PageShell, FormulaBar, ShapeBadge, Slider, Select, Divider } from "../components/UI";
 import { useAnimation } from "../hooks/useAnimation";
 import { randMatrix, broadcastAdd, shape, fmt, type Matrix } from "../lib/ndarray";
 
@@ -11,33 +12,33 @@ type Scenario = "2d_row" | "2d_col" | "col_x_row" | "custom";
 const SCENARIOS: { value: Scenario; label: string }[] = [
   { value: "2d_row",    label: "2D + row vector" },
   { value: "2d_col",    label: "2D + column vector" },
-  { value: "col_x_row", label: "Column × Row → 2D" },
+  { value: "col_x_row", label: "Column x Row -> 2D" },
   { value: "custom",    label: "Custom shapes" },
 ];
 
+const DESCRIPTION = "Broadcasting is how NumPy handles arithmetic between arrays of different shapes. When dimensions don't match, NumPy virtually stretches the smaller array to align with the larger one \u2014 without copying data. The animation shows three stages: (1) the original shapes, (2) how each array expands to a common shape, and (3) the element-wise computation on the expanded arrays.";
+
 export default function Broadcasting() {
   const [scenario, setScenario] = useState<Scenario>("2d_row");
-  const [seed, setSeed] = useState(5);
   const [aRows, setARows] = useState(3);
   const [aCols, setACols] = useState(4);
   const [bRows, setBRows] = useState(1);
   const [bCols, setBCols] = useState(4);
 
   const A = useMemo(() => {
-    if (scenario === "2d_row") return randMatrix(3, 4, 1, 9, seed);
-    if (scenario === "2d_col") return randMatrix(4, 3, 1, 9, seed);
-    if (scenario === "col_x_row") return randMatrix(4, 1, 1, 9, seed);
-    return randMatrix(aRows, aCols, 1, 9, seed);
-  }, [scenario, seed, aRows, aCols]);
+    if (scenario === "2d_row") return randMatrix(3, 4, 1, 9, 5);
+    if (scenario === "2d_col") return randMatrix(4, 3, 1, 9, 5);
+    if (scenario === "col_x_row") return randMatrix(4, 1, 1, 9, 5);
+    return randMatrix(aRows, aCols, 1, 9, 5);
+  }, [scenario, aRows, aCols]);
 
   const B = useMemo(() => {
-    if (scenario === "2d_row") return randMatrix(1, 4, 1, 9, seed + 10);
-    if (scenario === "2d_col") return randMatrix(4, 1, 1, 9, seed + 10);
-    if (scenario === "col_x_row") return randMatrix(1, 5, 1, 9, seed + 10);
-    return randMatrix(bRows, bCols, 1, 9, seed + 10);
-  }, [scenario, seed, bRows, bCols]);
+    if (scenario === "2d_row") return randMatrix(1, 4, 1, 9, 15);
+    if (scenario === "2d_col") return randMatrix(4, 1, 1, 9, 15);
+    if (scenario === "col_x_row") return randMatrix(1, 5, 1, 9, 15);
+    return randMatrix(bRows, bCols, 1, 9, 15);
+  }, [scenario, bRows, bCols]);
 
-  // Broadcast expand
   const [rA, cA] = shape(A);
   const [rB, cB] = shape(B);
   const outR = Math.max(rA, rB);
@@ -52,45 +53,37 @@ export default function Broadcasting() {
   let compatible = true;
   try { result = broadcastAdd(A, B); } catch { result = []; compatible = false; }
 
-  // Stages: 0=originals shown, 1=expanded shown, 2..2+cells=result building
   const resultCells = outR * outC;
   const totalSteps = 2 + resultCells;
-  const anim = useAnimation({ totalSteps, intervalMs: 350 });
+  const anim = useAnimation({ totalSteps, baseMs: 600 });
   const stage = anim.step < 1 ? 0 : anim.step < 2 ? 1 : 2;
   const cellIdx = Math.max(0, anim.step - 2);
 
   return (
-    <PageShell title="Broadcasting" accent="rose">
-      <Intro what="Broadcasting is NumPy's mechanism for performing operations on arrays of different shapes by virtually expanding the smaller array to match the larger one." why="It lets you write clean, vectorized code like adding a scalar to every element, or adding a row vector to every row of a matrix — without explicit loops." how="The animation shows three stages: original shapes, virtual expansion, then element-wise computation." />
+    <PageShell title="Broadcasting" icon={<Radio size={22} />} accent="rose" description={DESCRIPTION}>
       <div className="flex flex-wrap gap-4 items-end">
-        <Select value={scenario} onChange={setScenario as any} options={SCENARIOS} />
-        <Slider value={seed} min={1} max={99} onChange={setSeed} />
+        <Select label="Scenario" value={scenario} onChange={setScenario as any} options={SCENARIOS} />
         {scenario === "custom" && (
           <>
-            <Slider value={aRows} min={1} max={5} onChange={setARows} />
-            <Slider value={aCols} min={1} max={6} onChange={setACols} />
-            <Slider value={bRows} min={1} max={5} onChange={setBRows} />
-            <Slider value={bCols} min={1} max={6} onChange={setBCols} />
+            <Slider label="A rows" value={aRows} min={1} max={5} onChange={setARows} />
+            <Slider label="A cols" value={aCols} min={1} max={6} onChange={setACols} />
+            <Slider label="B rows" value={bRows} min={1} max={5} onChange={setBRows} />
+            <Slider label="B cols" value={bCols} min={1} max={6} onChange={setBCols} />
           </>
         )}
       </div>
 
-      <AnimControls {...anim} onToggle={anim.toggle}
-        onReset={anim.reset}
+      <AnimControls {...anim} onToggle={anim.toggle} onReset={anim.reset}
         label={stage === 0 ? "originals" : stage === 1 ? "expanded" : "computing"} />
 
       {/* Stage 0: Originals */}
       <div>
         <h3 className="text-sm font-semibold text-txt-secondary mb-2 font-mono uppercase tracking-wider">
-          Stage 1 — Original shapes
+          Stage 1 &mdash; Original shapes
         </h3>
         <div className="flex gap-6 flex-wrap items-start">
-          <div>
-            <ArrayGrid data={A} title="A" accent="cyan" decimals={0} label={`${rA}×${cA}`} />
-          </div>
-          <div>
-            <ArrayGrid data={B} title="B" accent="violet" decimals={0} label={`${rB}×${cB}`} />
-          </div>
+          <ArrayGrid data={A} title="A" accent="cyan" decimals={0} label={`${rA}x${cA}`} />
+          <ArrayGrid data={B} title="B" accent="violet" decimals={0} label={`${rB}x${cB}`} />
         </div>
       </div>
 
@@ -99,11 +92,11 @@ export default function Broadcasting() {
         <div>
           <Divider />
           <h3 className="text-sm font-semibold text-txt-secondary mb-2 mt-4 font-mono uppercase tracking-wider">
-            Stage 2 — Virtual expansion (no data copy)
+            Stage 2 &mdash; Virtual expansion (no data copy)
           </h3>
           <div className="flex gap-6 flex-wrap items-start">
-            <ArrayGrid data={Aexp} title="A broadcast" accent="cyan" decimals={0} label={`${outR}×${outC}`} />
-            <ArrayGrid data={Bexp} title="B broadcast" accent="violet" decimals={0} label={`${outR}×${outC}`} />
+            <ArrayGrid data={Aexp} title="A broadcast" accent="cyan" decimals={0} label={`${outR}x${outC}`} />
+            <ArrayGrid data={Bexp} title="B broadcast" accent="violet" decimals={0} label={`${outR}x${outC}`} />
           </div>
         </div>
       )}
@@ -113,7 +106,7 @@ export default function Broadcasting() {
         <div>
           <Divider />
           <h3 className="text-sm font-semibold text-txt-secondary mb-2 mt-4 font-mono uppercase tracking-wider">
-            Stage 3 — Element-wise result
+            Stage 3 &mdash; Element-wise result
           </h3>
           {(() => {
             const cr = Math.floor(cellIdx / outC);
@@ -136,13 +129,12 @@ export default function Broadcasting() {
       )}
 
       {!compatible && (
-        <div className="accent-rose accent-bg-rose border accent-border-rose rounded-xl px-5 py-3 text-sm accent-rose">
-          Shapes ({rA}×{cA}) and ({rB}×{cB}) are not broadcast-compatible.
+        <div className="accent-rose accent-bg-rose border accent-border-rose rounded-xl px-5 py-3 text-sm">
+          Shapes ({rA}x{cA}) and ({rB}x{cB}) are not broadcast-compatible.
         </div>
       )}
 
-      <CodePanel code={`# A.shape = (${rA}, ${cA}), B.shape = (${rB}, ${cB})
-result = A + B  # broadcast → (${outR}, ${outC})`} />
+      <CodePanel code={`# A.shape = (${rA}, ${cA}), B.shape = (${rB}, ${cB})\nresult = A + B  # broadcast -> (${outR}, ${outC})`} />
     </PageShell>
   );
 }
