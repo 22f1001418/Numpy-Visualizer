@@ -1,137 +1,142 @@
-# 🔬 NumPy Visualizer v2.0
+# 🔬 NumPy Visualizer
 
-An interactive Streamlit application that lets you **see** NumPy operations as they happen — animated step-by-step, with editable inputs, light/dark theme toggle, and 10 operation categories.
+A cinematic, animation-first interactive tool for visualizing NumPy operations — built with React, Framer Motion, and Tailwind CSS.
 
----
-
-## What's New in v2.0
-
-- **🌙/☀️ Theme Toggle** — switch between dark and light mode from any page via the sidebar button
-- **🎬 Step-by-step Animations** — play/pause/step transport controls on every operation; watch computations build cell by cell at adjustable speed
-- **✏️ Editable Inputs** — toggle any array between Random and Manual mode; edit values directly in an inline data-editor grid
-- **4 New Operation Pages** — Stacking & Splitting, Sorting, Cumulative Ops, Advanced Linear Algebra
-- **Sidebar-safe Navigation** — clickable page links on the Home screen so collapsing the sidebar is never a dead end
-
----
-
-## Pages
-
-| # | Page | Operations |
-|---|---|---|
-| 1 | **Array Basics** | `arange`, random, `reshape` (animated fill), `transpose` (cell mapping), `flatten` (C vs F animated) |
-| 2 | **Element-wise Ops** | `+ − × ÷ ** % // >` with animated cell-by-cell walkthrough |
-| 3 | **Matrix Operations** | Animated `matmul`, dot product (running sum), `det`, `inv` (+verification), `trace` (animated), `eig`, `matrix_rank` |
-| 4 | **Broadcasting** | 3-stage animation: originals → virtual expansion → element-wise result building |
-| 5 | **Slicing & Indexing** | Basic slice, fancy indexing, boolean mask (animated scan), strides, `np.where` |
-| 6 | **Aggregations** | `sum mean min max std prod` along axis 0/1/None — animated group-by-group collapse + bar chart |
-| 7 | **Stacking & Splitting** | `vstack` (animated row), `hstack` (animated col), `concatenate`, `split` |
-| 8 | **Sorting** | `sort` (1D animated bar chart + 2D axis), `argsort` (animated index tracing), `partition`, `unique` + counts |
-| 9 | **Cumulative Ops** | `cumsum` (1D animated + line chart, 2D axis), `cumprod`, `diff`, `percentile` |
-| 10 | **Advanced LinAlg** | `SVD` (U·σ·Vᵀ + reconstruction), `QR` (orthogonality check), `solve` (equation display + verify), `norm` (Frobenius breakdown), `cond` |
-
----
-
-## Prerequisites
-
-- **Python 3.10+** (tested on 3.11, 3.12)
-- **pip**
-
-## Dependencies
-
-| Package | Min Version | Purpose |
-|---|---|---|
-| `streamlit` | 1.40.0 | App framework, multi-page, `data_editor`, `page_link` |
-| `numpy` | 2.0.0 | The library being visualised |
-| `plotly` | 5.24.0 | Interactive heatmaps, bar charts, line charts |
-| `pandas` | 2.2.0 | Powers `st.data_editor` for manual array input |
+**No page reloads. No spinners. Every computation animates cell by cell with spring physics.**
 
 ---
 
 ## Quick Start
 
 ```bash
-cd numpy_visualizer
-python -m venv .venv
-source .venv/bin/activate      # macOS / Linux
-# .venv\Scripts\activate       # Windows
-
-pip install -r requirements.txt
-streamlit run Home.py
+cd numpy-viz
+npm install
+npm run dev
 ```
 
-Opens at **http://localhost:8501**.
+Opens at **http://localhost:3000**.
+
+---
+
+## Tech Stack
+
+| Layer | Technology | Why |
+|---|---|---|
+| Framework | **React 18** + TypeScript | Component model, hooks |
+| Build | **Vite 6** | Sub-second HMR, instant startup |
+| Animations | **Framer Motion 11** | Spring physics, layout animations, AnimatePresence |
+| Styling | **Tailwind CSS 3** | Utility-first, dark/light theming via CSS variables |
+| State | **Zustand 5** | Minimal, no boilerplate, single store |
+| Code display | **prism-react-renderer** | Syntax-highlighted Python snippets |
+| Icons | **Lucide React** | Crisp, consistent icon set |
+| Math engine | **Custom TypeScript** | `src/lib/ndarray.ts` — lightweight NumPy-like ops |
+
+---
+
+## Features
+
+### 🎬 Step-by-step Animations
+Every operation has a transport bar (⏮ ◀ ▶ ▶ ⏭) powered by `requestAnimationFrame` intervals — no page reloads. Hit Play and watch matmul fill cell by cell, cumsum grow a line chart, or a boolean mask scan every element.
+
+### ✏️ Editable Arrays
+Double-click any cell → type a new value → press Enter. The entire visualization updates instantly. Every page also has seed/size sliders for quick randomisation.
+
+### 🌙 ☀️ Theme Toggle
+One-click dark/light switch in the sidebar. Both themes use CSS custom properties so Plotly charts, grids, and code blocks all adapt seamlessly.
+
+### 🧲 Spring Physics
+Cell appearances use Framer Motion springs (`stiffness: 500, damping: 30`) — values animate in/out, highlighted cells glow with CSS box-shadows, and layout shifts use `layout` animations for smooth reshaping.
+
+---
+
+## Pages
+
+| Page | Operations |
+|---|---|
+| **Element-wise** | `+ − × ÷ ** % >` — animated cell-by-cell with partial result build |
+| **Matrix Multiply** | Step-through `A @ B` — highlights active row/column, shows dot product breakdown |
+| **Reshape & Transpose** | Elements flow from 1-D into 2-D grid; transpose maps `[i,j] → [j,i]`; flatten animates C-order |
+| **Broadcasting** | 3-stage: originals → virtual expansion → element-wise result building |
+| **Slicing & Indexing** | Basic slice, fancy indexing (toggle row/col buttons), boolean mask with animated scan |
+| **Aggregations** | `sum mean max min` along axis 0/1/None — animated group collapse + inline bar chart |
+| **Stacking** | `vstack` / `hstack` — rows/columns assemble one by one with origin tracking |
+| **Sorting** | `sort` (animated bar chart), `argsort` (index tracing), `unique` (count bars) |
+| **Cumulative Ops** | `cumsum`, `cumprod`, `diff` — animated line chart with running formula |
 
 ---
 
 ## Project Structure
 
 ```
-numpy_visualizer/
-├── Home.py                          # Landing page + in-content navigation
-├── pages/
-│   ├── 1_Array_Basics.py
-│   ├── 2_Elementwise_Ops.py
-│   ├── 3_Matrix_Operations.py
-│   ├── 4_Broadcasting.py
-│   ├── 5_Slicing_Indexing.py
-│   ├── 6_Aggregations.py
-│   ├── 7_Stacking_Splitting.py      # NEW
-│   ├── 8_Sorting.py                 # NEW
-│   ├── 9_Cumulative_Ops.py          # NEW
-│   └── 10_Advanced_LinAlg.py        # NEW
-├── utils/
-│   ├── __init__.py
-│   ├── theme.py                     # Dual-theme system + CSS injection
-│   ├── viz.py                       # Heatmap renderer + array_input widget
-│   └── animator.py                  # NEW – play/pause/step controller
-├── .streamlit/
-│   └── config.toml
-├── requirements.txt
-└── README.md
+numpy-viz/
+├── package.json
+├── vite.config.ts
+├── tailwind.config.js
+├── tsconfig.json
+├── index.html
+├── src/
+│   ├── main.tsx                    # Entry point
+│   ├── App.tsx                     # Shell: sidebar + page router
+│   ├── index.css                   # Tailwind + theme variables + cell glow classes
+│   ├── lib/
+│   │   └── ndarray.ts              # NumPy-like matrix ops in TypeScript
+│   ├── store/
+│   │   └── useStore.ts             # Zustand: theme, page, sidebar state
+│   ├── hooks/
+│   │   └── useAnimation.ts         # Step controller with play/pause/interval
+│   ├── components/
+│   │   ├── ArrayGrid.tsx           # ⭐ Core array heatmap — animated cells
+│   │   ├── AnimControls.tsx        # Transport bar (⏮ ◀ ▶ ▶ ⏭)
+│   │   ├── Sidebar.tsx             # Navigation + theme toggle
+│   │   ├── CodePanel.tsx           # Syntax-highlighted Python code
+│   │   └── UI.tsx                  # PageShell, FormulaBar, Slider, Select, etc.
+│   └── pages/
+│       ├── Home.tsx
+│       ├── ElementWise.tsx
+│       ├── MatMul.tsx
+│       ├── Reshape.tsx
+│       ├── Broadcasting.tsx
+│       ├── Slicing.tsx
+│       ├── Aggregation.tsx
+│       ├── Stacking.tsx
+│       ├── Sorting.tsx
+│       └── Cumulative.tsx
 ```
 
 ---
 
-## How the Animation System Works
+## Design Tokens
 
-Every animated page uses `utils/animator.py`:
+The entire app is themed via CSS custom properties (`--surface-0` through `--surface-3`, `--text-primary`, `--border-color`, etc.) defined in `src/index.css`. Accent colors (`cyan`, `violet`, `amber`, `emerald`, `rose`) are shared across themes.
 
-```python
-from utils.animator import Animator
-
-anim = Animator("unique_key", total_steps=20, speed=0.6)
-anim.controls()        # renders ⏮ ◀ ▶/⏸ ▶ ⏭ + progress bar
-step = anim.current    # 0-based step index
-
-# ... render visuals for `step` ...
-
-anim.maybe_advance()   # MUST be last — triggers st.rerun() when playing
-```
-
-Speed is seconds between frames (lower = faster). Each page picks a speed that feels natural for the operation.
+Cell highlights use dedicated CSS classes (`.cell-highlight-cyan`, etc.) with `box-shadow` glow effects that adapt to theme brightness.
 
 ---
 
-## Customisation
+## Extending
 
-| What | Where |
-|---|---|
-| Colors & accents | `utils/theme.py` → `DARK` / `LIGHT` dicts + accent constants |
-| Plotly colorscales | `utils/theme.py` → `_make_colorscales()` |
-| Animation speed | Each page's `Animator(speed=...)` call |
-| Add a new page | Drop a numbered `.py` in `pages/` — Streamlit auto-discovers it |
+**Add a new operation page:**
+1. Create `src/pages/MyOp.tsx` using `PageShell`, `ArrayGrid`, `AnimControls`, `CodePanel`
+2. Add entry to `NAV_ITEMS` in `src/store/useStore.ts`
+3. Import and add to `PAGE_MAP` in `src/App.tsx`
+
+**Add a new NumPy function:**
+1. Implement in `src/lib/ndarray.ts`
+2. Use in your page component
 
 ---
 
 ## Deployment
 
-Works out of the box on:
-- [Streamlit Community Cloud](https://streamlit.io/cloud) (free)
-- Docker / Railway / Render — just set entrypoint to `streamlit run Home.py`
-- Any server with Python 3.10+
+```bash
+npm run build        # outputs to dist/
+npx serve dist       # preview locally
+```
+
+Deploy `dist/` to Vercel, Netlify, Cloudflare Pages, or any static host.
 
 ---
 
 ## License
 
-MIT — use freely for teaching, demos, or internal tooling.
+MIT
