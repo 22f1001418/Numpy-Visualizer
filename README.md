@@ -1,66 +1,65 @@
-# 🔬 NumPy Visualizer
+# 🔬 NumPy Visualizer v2.0
 
-An interactive Streamlit application that lets you **see** NumPy operations as they happen — heatmap grids, step-by-step matrix multiplication, broadcasting expansion, slicing highlights, and more.
+An interactive Streamlit application that lets you **see** NumPy operations as they happen — animated step-by-step, with editable inputs, light/dark theme toggle, and 10 operation categories.
 
 ---
 
-## Features
+## What's New in v2.0
 
-| Page | What it covers |
-|---|---|
-| **Array Basics** | `arange`, random arrays, `reshape`, `transpose`, `flatten` (C vs F order) |
-| **Element-wise Ops** | `+  −  ×  ÷  **  %  >` on array↔array or array↔scalar, with cell-by-cell walkthrough |
-| **Matrix Operations** | Step-through `matmul`, dot product, determinant, inverse, trace, eigenvalues |
-| **Broadcasting** | Preset and custom shape pairs; shows original → virtual expansion → result |
-| **Slicing & Indexing** | Basic slices, fancy indexing, boolean masks, stride tricks — highlighted on the source array |
-| **Aggregations** | `sum  mean  min  max  std  prod` along `axis=0 / 1 / None`, with bar-chart view |
+- **🌙/☀️ Theme Toggle** — switch between dark and light mode from any page via the sidebar button
+- **🎬 Step-by-step Animations** — play/pause/step transport controls on every operation; watch computations build cell by cell at adjustable speed
+- **✏️ Editable Inputs** — toggle any array between Random and Manual mode; edit values directly in an inline data-editor grid
+- **4 New Operation Pages** — Stacking & Splitting, Sorting, Cumulative Ops, Advanced Linear Algebra
+- **Sidebar-safe Navigation** — clickable page links on the Home screen so collapsing the sidebar is never a dead end
 
-Every page includes:
-- Live sidebar controls (shape, seed, operation)
-- Annotated Plotly heatmaps with highlighted cells
-- The equivalent NumPy code snippet
-- Expandable explainers for the underlying mechanics
+---
+
+## Pages
+
+| # | Page | Operations |
+|---|---|---|
+| 1 | **Array Basics** | `arange`, random, `reshape` (animated fill), `transpose` (cell mapping), `flatten` (C vs F animated) |
+| 2 | **Element-wise Ops** | `+ − × ÷ ** % // >` with animated cell-by-cell walkthrough |
+| 3 | **Matrix Operations** | Animated `matmul`, dot product (running sum), `det`, `inv` (+verification), `trace` (animated), `eig`, `matrix_rank` |
+| 4 | **Broadcasting** | 3-stage animation: originals → virtual expansion → element-wise result building |
+| 5 | **Slicing & Indexing** | Basic slice, fancy indexing, boolean mask (animated scan), strides, `np.where` |
+| 6 | **Aggregations** | `sum mean min max std prod` along axis 0/1/None — animated group-by-group collapse + bar chart |
+| 7 | **Stacking & Splitting** | `vstack` (animated row), `hstack` (animated col), `concatenate`, `split` |
+| 8 | **Sorting** | `sort` (1D animated bar chart + 2D axis), `argsort` (animated index tracing), `partition`, `unique` + counts |
+| 9 | **Cumulative Ops** | `cumsum` (1D animated + line chart, 2D axis), `cumprod`, `diff`, `percentile` |
+| 10 | **Advanced LinAlg** | `SVD` (U·σ·Vᵀ + reconstruction), `QR` (orthogonality check), `solve` (equation display + verify), `norm` (Frobenius breakdown), `cond` |
 
 ---
 
 ## Prerequisites
 
-- **Python 3.10+** (tested on 3.11 and 3.12)
-- **pip** (or any Python package manager)
-
----
+- **Python 3.10+** (tested on 3.11, 3.12)
+- **pip**
 
 ## Dependencies
 
 | Package | Min Version | Purpose |
 |---|---|---|
-| `streamlit` | 1.40.0 | App framework + multi-page routing |
-| `numpy` | 2.0.0 | The library being visualized |
-| `plotly` | 5.24.0 | Interactive heatmaps and charts |
-
-All dependencies are listed in `requirements.txt`.
+| `streamlit` | 1.40.0 | App framework, multi-page, `data_editor`, `page_link` |
+| `numpy` | 2.0.0 | The library being visualised |
+| `plotly` | 5.24.0 | Interactive heatmaps, bar charts, line charts |
+| `pandas` | 2.2.0 | Powers `st.data_editor` for manual array input |
 
 ---
 
 ## Quick Start
 
 ```bash
-# 1. Clone / unzip the project
 cd numpy_visualizer
-
-# 2. (Recommended) Create a virtual environment
 python -m venv .venv
-source .venv/bin/activate        # macOS / Linux
-# .venv\Scripts\activate         # Windows
+source .venv/bin/activate      # macOS / Linux
+# .venv\Scripts\activate       # Windows
 
-# 3. Install dependencies
 pip install -r requirements.txt
-
-# 4. Run the app
 streamlit run Home.py
 ```
 
-The app will open at **http://localhost:8501** by default.
+Opens at **http://localhost:8501**.
 
 ---
 
@@ -68,31 +67,68 @@ The app will open at **http://localhost:8501** by default.
 
 ```
 numpy_visualizer/
-├── Home.py                      # Landing page
+├── Home.py                          # Landing page + in-content navigation
 ├── pages/
-│   ├── 1_Array_Basics.py        # Create, reshape, transpose
-│   ├── 2_Elementwise_Ops.py     # +, −, ×, ÷, **, %, >
-│   ├── 3_Matrix_Operations.py   # matmul, det, inv, eig
-│   ├── 4_Broadcasting.py        # Shape expansion
-│   ├── 5_Slicing_Indexing.py    # Slices, fancy idx, masks
-│   └── 6_Aggregations.py        # sum, mean, min, max, std
+│   ├── 1_Array_Basics.py
+│   ├── 2_Elementwise_Ops.py
+│   ├── 3_Matrix_Operations.py
+│   ├── 4_Broadcasting.py
+│   ├── 5_Slicing_Indexing.py
+│   ├── 6_Aggregations.py
+│   ├── 7_Stacking_Splitting.py      # NEW
+│   ├── 8_Sorting.py                 # NEW
+│   ├── 9_Cumulative_Ops.py          # NEW
+│   └── 10_Advanced_LinAlg.py        # NEW
 ├── utils/
 │   ├── __init__.py
-│   ├── theme.py                 # Colors, CSS, Plotly defaults
-│   └── viz.py                   # Heatmap / highlight helpers
+│   ├── theme.py                     # Dual-theme system + CSS injection
+│   ├── viz.py                       # Heatmap renderer + array_input widget
+│   └── animator.py                  # NEW – play/pause/step controller
 ├── .streamlit/
-│   └── config.toml              # Dark theme config
+│   └── config.toml
 ├── requirements.txt
 └── README.md
 ```
 
 ---
 
+## How the Animation System Works
+
+Every animated page uses `utils/animator.py`:
+
+```python
+from utils.animator import Animator
+
+anim = Animator("unique_key", total_steps=20, speed=0.6)
+anim.controls()        # renders ⏮ ◀ ▶/⏸ ▶ ⏭ + progress bar
+step = anim.current    # 0-based step index
+
+# ... render visuals for `step` ...
+
+anim.maybe_advance()   # MUST be last — triggers st.rerun() when playing
+```
+
+Speed is seconds between frames (lower = faster). Each page picks a speed that feels natural for the operation.
+
+---
+
 ## Customisation
 
-- **Theme colours** — edit `utils/theme.py` (CSS variables + Plotly colorscales).
-- **Add a new page** — drop a `.py` file in `pages/` prefixed with a number. Streamlit auto-discovers it.
-- **Deploy** — works out of the box on [Streamlit Community Cloud](https://streamlit.io/cloud), Heroku, Railway, or any Docker host.
+| What | Where |
+|---|---|
+| Colors & accents | `utils/theme.py` → `DARK` / `LIGHT` dicts + accent constants |
+| Plotly colorscales | `utils/theme.py` → `_make_colorscales()` |
+| Animation speed | Each page's `Animator(speed=...)` call |
+| Add a new page | Drop a numbered `.py` in `pages/` — Streamlit auto-discovers it |
+
+---
+
+## Deployment
+
+Works out of the box on:
+- [Streamlit Community Cloud](https://streamlit.io/cloud) (free)
+- Docker / Railway / Render — just set entrypoint to `streamlit run Home.py`
+- Any server with Python 3.10+
 
 ---
 
