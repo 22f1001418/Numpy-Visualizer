@@ -1,10 +1,10 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useCallback, useMemo } from "react";
-import { type Matrix, type Accent, fmt, heatLevel } from "../lib/ndarray";
-import type { Accent as AccentType } from "../store/useStore";
+import { type Matrix, fmt, heatLevel } from "../lib/ndarray";
+import type { Accent } from "../store/useStore";
 
 interface CellMeta {
-  glow?: AccentType;   // animated glow border
+  glow?: Accent;   // animated glow border
   dim?: boolean;
   computed?: boolean;
 }
@@ -12,7 +12,7 @@ interface CellMeta {
 interface Props {
   data: Matrix;
   title?: string;
-  accent?: AccentType;
+  accent?: Accent;
   cellMeta?: (row: number, col: number) => CellMeta;
   onCellEdit?: (row: number, col: number, value: number) => void;
   decimals?: number;

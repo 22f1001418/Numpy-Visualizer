@@ -58,11 +58,10 @@ export default function Sorting() {
                       style={{ height: `${h}%` }} />
                     {/* Sorted bar (overlay) */}
                     <motion.div
-                      className="absolute bottom-0 w-full rounded-t"
+                      className={`absolute bottom-0 w-full rounded-t ${active ? "bg-[var(--accent)]" : "bg-transparent"}`}
                       initial={{ height: 0 }}
                       animate={{ height: active ? `${sH}%` : 0 }}
                       transition={{ type: "spring", stiffness: 200, damping: 20 }}
-                      className={active ? "bg-[var(--accent)]" : "bg-transparent"}
                     />
                   </div>
                   <span className="text-[9px] font-mono text-txt-muted">{i}</span>
