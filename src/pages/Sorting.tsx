@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import ArrayGrid from "../components/ArrayGrid";
 import AnimControls from "../components/AnimControls";
 import CodePanel from "../components/CodePanel";
-import { PageShell, FormulaBar, Slider, Select } from "../components/UI";
+import { PageShell, Intro, FormulaBar, Slider, Select } from "../components/UI";
 import { useAnimation } from "../hooks/useAnimation";
 import { randVector, sort, argsort, fmt } from "../lib/ndarray";
 
@@ -26,20 +26,21 @@ export default function Sorting() {
     return { values: u, counts };
   }, [arr]);
 
-  const anim = useAnimation({ totalSteps: op === "unique" ? uniqMap.values.length : n, baseMs: 400 });
+  const anim = useAnimation({ totalSteps: op === "unique" ? uniqMap.values.length : n, intervalMs: 400 });
 
   return (
-    <PageShell title="Sorting" icon="🔃" accent="amber">
+    <PageShell title="Sorting" accent="amber">
+      <Intro what="np.sort rearranges elements in ascending order. argsort returns the indices that would sort the array. unique finds distinct values." why="Sorting is the basis of ranking, percentile computation, and efficient searching. argsort is particularly important for reordering related data by a computed metric." how="Press Play to watch elements rearrange. The bar chart shows the visual progression from unsorted to sorted order." />
       <div className="flex flex-wrap gap-4 items-end">
-        <Select label="Operation" value={op} onChange={setOp as any}
+        <Select value={op} onChange={setOp as any}
           options={[{ value: "sort", label: "sort" }, { value: "argsort", label: "argsort" },
                     { value: "unique", label: "unique" }]} />
-        <Slider label="Elements" value={n} min={5} max={16} onChange={setN} />
-        <Slider label="Seed" value={seed} min={1} max={99} onChange={setSeed} />
+        <Slider value={n} min={5} max={16} onChange={setN} />
+        <Slider value={seed} min={1} max={99} onChange={setSeed} />
       </div>
 
-      <AnimControls {...anim} onToggle={anim.toggle} onPrev={anim.prev}
-        onNext={anim.next} onReset={anim.reset} onEnd={anim.goEnd} label="element" />
+      <AnimControls {...anim} onToggle={anim.toggle}
+        onReset={anim.reset} />
 
       {op === "sort" && (
         <>

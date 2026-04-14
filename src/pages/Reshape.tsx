@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import ArrayGrid from "../components/ArrayGrid";
 import AnimControls from "../components/AnimControls";
 import CodePanel from "../components/CodePanel";
-import { PageShell, FormulaBar, Slider, Select } from "../components/UI";
+import { PageShell, Intro, FormulaBar, Slider, Select } from "../components/UI";
 import { useAnimation } from "../hooks/useAnimation";
 import { arange, reshape, transpose, flatten, randMatrix, fmt, type Matrix } from "../lib/ndarray";
 
@@ -34,7 +34,7 @@ export default function Reshape() {
     mode === "transpose" ? rows * cols :
     rows * cols;
 
-  const anim = useAnimation({ totalSteps: stepCount, baseMs: 320 });
+  const anim = useAnimation({ totalSteps: stepCount, intervalMs: 320 });
 
   const modeOpts = [
     { value: "reshape" as const, label: "Reshape" },
@@ -43,33 +43,34 @@ export default function Reshape() {
   ];
 
   return (
-    <PageShell title="Reshape & Transpose" icon="🔢" accent="cyan">
+    <PageShell title="Reshape & Transpose" accent="cyan">
+      <Intro what="Reshape changes how array elements are arranged in memory without altering the data itself. Transpose swaps rows and columns. Flatten collapses dimensions into 1-D." why="Understanding reshape is key to preparing data for ML models, image processing, and matrix operations where specific shapes are required." how="Press Play to watch each element move from its source position into the new shape, one at a time." />
       <div className="flex flex-wrap gap-4 items-end">
-        <Select label="Mode" value={mode} onChange={setMode as any} options={modeOpts} />
+        <Select value={mode} onChange={setMode as any} options={modeOpts} />
         {mode === "reshape" && (
           <>
-            <Slider label="Total elements" value={total} min={4} max={24} onChange={setTotal} />
-            <Select label="New rows" value={String(newRows)} onChange={(v) => setRows(Number(v))}
+            <Slider value={total} min={4} max={24} onChange={setTotal} />
+            <Select value={String(newRows)} onChange={(v) => setRows(Number(v))}
               options={divisors.map((d) => ({ value: String(d), label: `${d} → (${d}×${total / d})` }))} />
           </>
         )}
         {mode === "transpose" && (
           <>
-            <Slider label="Rows" value={rows} min={2} max={6} onChange={setRows} />
-            <Slider label="Cols" value={cols} min={2} max={6} onChange={setCols} />
-            <Slider label="Seed" value={seed} min={1} max={99} onChange={setSeed} />
+            <Slider value={rows} min={2} max={6} onChange={setRows} />
+            <Slider value={cols} min={2} max={6} onChange={setCols} />
+            <Slider value={seed} min={1} max={99} onChange={setSeed} />
           </>
         )}
         {mode === "flatten" && (
           <>
-            <Slider label="Rows" value={rows} min={2} max={6} onChange={setRows} />
-            <Slider label="Cols" value={cols} min={2} max={6} onChange={setCols} />
+            <Slider value={rows} min={2} max={6} onChange={setRows} />
+            <Slider value={cols} min={2} max={6} onChange={setCols} />
           </>
         )}
       </div>
 
-      <AnimControls {...anim} onToggle={anim.toggle} onPrev={anim.prev}
-        onNext={anim.next} onReset={anim.reset} onEnd={anim.goEnd} label="element" />
+      <AnimControls {...anim} onToggle={anim.toggle}
+        onReset={anim.reset} />
 
       {/* ── Reshape ───────────────────── */}
       {mode === "reshape" && (() => {

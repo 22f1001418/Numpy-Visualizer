@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import ArrayGrid from "../components/ArrayGrid";
 import AnimControls from "../components/AnimControls";
 import CodePanel from "../components/CodePanel";
-import { PageShell, FormulaBar, ShapeBadge, Slider, Select, Divider } from "../components/UI";
+import { PageShell, Intro, FormulaBar, ShapeBadge, Slider, Select, Divider } from "../components/UI";
 import { useAnimation } from "../hooks/useAnimation";
 import { randMatrix, broadcastAdd, shape, fmt, type Matrix } from "../lib/ndarray";
 
@@ -55,27 +55,28 @@ export default function Broadcasting() {
   // Stages: 0=originals shown, 1=expanded shown, 2..2+cells=result building
   const resultCells = outR * outC;
   const totalSteps = 2 + resultCells;
-  const anim = useAnimation({ totalSteps, baseMs: 350 });
+  const anim = useAnimation({ totalSteps, intervalMs: 350 });
   const stage = anim.step < 1 ? 0 : anim.step < 2 ? 1 : 2;
   const cellIdx = Math.max(0, anim.step - 2);
 
   return (
-    <PageShell title="Broadcasting" icon="📡" accent="rose">
+    <PageShell title="Broadcasting" accent="rose">
+      <Intro what="Broadcasting is NumPy's mechanism for performing operations on arrays of different shapes by virtually expanding the smaller array to match the larger one." why="It lets you write clean, vectorized code like adding a scalar to every element, or adding a row vector to every row of a matrix — without explicit loops." how="The animation shows three stages: original shapes, virtual expansion, then element-wise computation." />
       <div className="flex flex-wrap gap-4 items-end">
-        <Select label="Scenario" value={scenario} onChange={setScenario as any} options={SCENARIOS} />
-        <Slider label="Seed" value={seed} min={1} max={99} onChange={setSeed} />
+        <Select value={scenario} onChange={setScenario as any} options={SCENARIOS} />
+        <Slider value={seed} min={1} max={99} onChange={setSeed} />
         {scenario === "custom" && (
           <>
-            <Slider label="A rows" value={aRows} min={1} max={5} onChange={setARows} />
-            <Slider label="A cols" value={aCols} min={1} max={6} onChange={setACols} />
-            <Slider label="B rows" value={bRows} min={1} max={5} onChange={setBRows} />
-            <Slider label="B cols" value={bCols} min={1} max={6} onChange={setBCols} />
+            <Slider value={aRows} min={1} max={5} onChange={setARows} />
+            <Slider value={aCols} min={1} max={6} onChange={setACols} />
+            <Slider value={bRows} min={1} max={5} onChange={setBRows} />
+            <Slider value={bCols} min={1} max={6} onChange={setBCols} />
           </>
         )}
       </div>
 
-      <AnimControls {...anim} onToggle={anim.toggle} onPrev={anim.prev}
-        onNext={anim.next} onReset={anim.reset} onEnd={anim.goEnd}
+      <AnimControls {...anim} onToggle={anim.toggle}
+        onReset={anim.reset}
         label={stage === 0 ? "originals" : stage === 1 ? "expanded" : "computing"} />
 
       {/* Stage 0: Originals */}

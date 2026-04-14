@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import ArrayGrid from "../components/ArrayGrid";
 import AnimControls from "../components/AnimControls";
 import CodePanel from "../components/CodePanel";
-import { PageShell, FormulaBar, Slider, Select, Divider, BigResult } from "../components/UI";
+import { PageShell, Intro, FormulaBar, Slider, Select, Divider, BigResult } from "../components/UI";
 import { useAnimation } from "../hooks/useAnimation";
 import { randMatrix, sumAxis, meanAxis, maxAxis, minAxis, shape, fmt, type Matrix, type Vector } from "../lib/ndarray";
 
@@ -26,27 +26,27 @@ export default function Aggregation() {
   const result = useMemo(() => AGG_FNS[aggKey](arr, axis), [arr, aggKey, axis]);
 
   const nGroups = axis === 0 ? cols : axis === 1 ? rows : 1;
-  const anim = useAnimation({ totalSteps: nGroups, baseMs: 550 });
+  const anim = useAnimation({ totalSteps: nGroups, intervalMs: 550 });
 
   const accentColor = axis === 0 ? "violet" : axis === 1 ? "amber" : "rose";
 
   return (
-    <PageShell title="Aggregations" icon="📊" accent="cyan">
+    <PageShell title="Aggregations" accent="cyan">
+      <Intro what="Aggregation functions (sum, mean, max, min) collapse an array along one or more axes, reducing its dimensionality." why="They are fundamental to statistical analysis — computing totals per column, averages per row, or a single global statistic from an entire dataset." how="Press Play to watch the aggregation process one group at a time. The highlighted cells show which values contribute to each output element." />
       <div className="flex flex-wrap gap-4 items-end">
-        <Slider label="Rows" value={rows} min={2} max={6} onChange={setRows} />
-        <Slider label="Cols" value={cols} min={2} max={6} onChange={setCols} />
-        <Slider label="Seed" value={seed} min={1} max={99} onChange={setSeed} />
-        <Select label="Function" value={aggKey} onChange={setAggKey as any}
+        <Slider value={rows} min={2} max={6} onChange={setRows} />
+        <Slider value={cols} min={2} max={6} onChange={setCols} />
+        <Slider value={seed} min={1} max={99} onChange={setSeed} />
+        <Select value={aggKey} onChange={setAggKey as any}
           options={[{ value: "sum", label: "sum" }, { value: "mean", label: "mean" },
                     { value: "max", label: "max" }, { value: "min", label: "min" }]} />
-        <Select label="Axis" value={axisStr} onChange={setAxisStr as any}
+        <Select value={axisStr} onChange={setAxisStr as any}
           options={[{ value: "0", label: "axis=0 (↓ cols)" }, { value: "1", label: "axis=1 (→ rows)" },
                     { value: "none", label: "axis=None (all)" }]} />
       </div>
 
-      <AnimControls {...anim} onToggle={anim.toggle} onPrev={anim.prev}
-        onNext={anim.next} onReset={anim.reset} onEnd={anim.goEnd}
-        label={axis === 0 ? "column" : axis === 1 ? "row" : "all"} />
+      <AnimControls {...anim} onToggle={anim.toggle}
+        onReset={anim.reset} />
 
       <div className="flex gap-8 flex-wrap items-start">
         <ArrayGrid data={arr} title={`Input (${rows}×${cols})`} accent="cyan" decimals={0}

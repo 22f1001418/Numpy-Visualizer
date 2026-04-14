@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import ArrayGrid from "../components/ArrayGrid";
 import AnimControls from "../components/AnimControls";
 import CodePanel from "../components/CodePanel";
-import { PageShell, FormulaBar, Slider, Select } from "../components/UI";
+import { PageShell, Intro, FormulaBar, Slider, Select } from "../components/UI";
 import { useAnimation } from "../hooks/useAnimation";
 import { randVector, cumsum, cumprod, diff, fmt } from "../lib/ndarray";
 
@@ -25,7 +25,7 @@ export default function Cumulative() {
     return diff(arr);
   }, [arr, op]);
 
-  const anim = useAnimation({ totalSteps: result.length, baseMs: 420 });
+  const anim = useAnimation({ totalSteps: result.length, intervalMs: 420 });
   const maxResult = Math.max(...result.map(Math.abs), 1);
 
   // Build formula for current step
@@ -43,17 +43,18 @@ export default function Cumulative() {
   }, [anim.step, arr, result, op]);
 
   return (
-    <PageShell title="Cumulative Operations" icon="📈" accent="rose">
+    <PageShell title="Cumulative Operations" accent="rose">
+      <Intro what="Cumulative functions produce running totals: cumsum builds a running sum, cumprod a running product, and diff computes consecutive differences." why="Cumulative sums are used in time-series analysis, probability distributions (CDFs), and financial computations. diff is the discrete derivative — detecting rates of change." how="Press Play to watch the running total build element by element, with a live chart tracking the growth." />
       <div className="flex flex-wrap gap-4 items-end">
-        <Select label="Operation" value={op} onChange={setOp as any}
+        <Select value={op} onChange={setOp as any}
           options={[{ value: "cumsum", label: "cumsum" }, { value: "cumprod", label: "cumprod" },
                     { value: "diff", label: "diff" }]} />
-        <Slider label="Elements" value={n} min={4} max={14} onChange={setN} />
-        <Slider label="Seed" value={seed} min={1} max={99} onChange={setSeed} />
+        <Slider value={n} min={4} max={14} onChange={setN} />
+        <Slider value={seed} min={1} max={99} onChange={setSeed} />
       </div>
 
-      <AnimControls {...anim} onToggle={anim.toggle} onPrev={anim.prev}
-        onNext={anim.next} onReset={anim.reset} onEnd={anim.goEnd} label="step" />
+      <AnimControls {...anim} onToggle={anim.toggle}
+        onReset={anim.reset} />
 
       {/* Arrays */}
       <div className="flex gap-8 flex-wrap items-start">
