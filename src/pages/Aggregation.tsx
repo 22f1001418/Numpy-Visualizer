@@ -30,10 +30,10 @@ export default function Aggregation() {
   const nGroups = axis === 0 ? cols : axis === 1 ? rows : 1;
   const anim = useAnimation({ totalSteps: nGroups, baseMs: 800 });
 
-  const accentColor = axis === 0 ? "violet" : axis === 1 ? "amber" : "rose";
+  const accentColor = axis === 0 ? "coral" : axis === 1 ? "amber" : "violet";
 
   return (
-    <PageShell title="Aggregations" icon={<BarChart3 size={22} />} accent="cyan" description={DESCRIPTION}>
+    <PageShell title="Aggregations" icon={<BarChart3 size={22} />} accent="teal" description={DESCRIPTION}>
       <div className="flex flex-wrap gap-4 items-end">
         <Slider label="Rows" value={rows} min={2} max={6} onChange={setRows} />
         <Slider label="Cols" value={cols} min={2} max={6} onChange={setCols} />
@@ -49,11 +49,11 @@ export default function Aggregation() {
         label={axis === 0 ? "column" : axis === 1 ? "row" : "all"} />
 
       <div className="flex gap-8 flex-wrap items-start">
-        <ArrayGrid data={arr} title={`Input (${rows}x${cols})`} accent="cyan" decimals={0}
+        <ArrayGrid data={arr} title={`Input (${rows}x${cols})`} accent="teal" decimals={0}
           cellMeta={(r, c) => {
-            if (axis === 0 && c === anim.step) return { glow: "violet" };
+            if (axis === 0 && c === anim.step) return { glow: "coral" };
             if (axis === 1 && r === anim.step) return { glow: "amber" };
-            if (axis === null) return { glow: "rose" };
+            if (axis === null) return { glow: "violet" };
             return { dim: true };
           }} />
 
@@ -64,7 +64,7 @@ export default function Aggregation() {
         })()}
 
         {axis === null && typeof result === "number" && (
-          <BigResult value={fmt(result, 4)} label={`${aggKey}(all)`} accent="rose" />
+          <BigResult value={fmt(result, 4)} label={`${aggKey}(all)`} accent="violet" />
         )}
       </div>
 

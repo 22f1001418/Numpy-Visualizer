@@ -68,7 +68,7 @@ export default function Sorting() {
           </div>
 
           <div className="flex gap-8 flex-wrap items-start">
-            <ArrayGrid data={[arr]} title="Original" accent="cyan" decimals={0} />
+            <ArrayGrid data={[arr]} title="Original" accent="teal" decimals={0} />
             <ArrayGrid
               data={[sorted.map((v, i) => (i <= anim.step ? v : NaN))]}
               title="Sorted" accent="amber" decimals={0}
@@ -81,19 +81,19 @@ export default function Sorting() {
       {op === "argsort" && (
         <>
           <div className="flex gap-6 flex-wrap items-start">
-            <ArrayGrid data={[arr]} title="Original" accent="cyan" decimals={0}
-              cellMeta={(_, c) => (c === indices[anim.step] ? { glow: "cyan" } : { dim: true })} />
+            <ArrayGrid data={[arr]} title="Original" accent="teal" decimals={0}
+              cellMeta={(_, c) => (c === indices[anim.step] ? { glow: "teal" } : { dim: true })} />
             <ArrayGrid
               data={[indices.map((v, i) => (i <= anim.step ? v : NaN))]}
-              title="argsort indices" accent="violet" decimals={0}
-              cellMeta={(_, c) => (c === anim.step ? { glow: "violet" } : {})} />
+              title="argsort indices" accent="coral" decimals={0}
+              cellMeta={(_, c) => (c === anim.step ? { glow: "coral" } : {})} />
             <ArrayGrid
               data={[indices.map((idx, i) => (i <= anim.step ? arr[idx] : NaN))]}
               title="arr[argsort]" accent="amber" decimals={0}
               cellMeta={(_, c) => (c === anim.step ? { glow: "amber" } : {})} />
           </div>
-          <FormulaBar accent="violet">
-            Position {anim.step}: index = <span className="accent-violet">{indices[anim.step]}</span>
+          <FormulaBar accent="coral">
+            Position {anim.step}: index = <span className="accent-coral">{indices[anim.step]}</span>
             {" -> "} value = <span className="accent-amber font-bold">{fmt(arr[indices[anim.step]], 0)}</span>
           </FormulaBar>
           <CodePanel code={`indices = np.argsort(arr)\nsorted = arr[indices]`} />
@@ -103,7 +103,7 @@ export default function Sorting() {
       {op === "unique" && (
         <>
           <div className="flex gap-8 flex-wrap items-start">
-            <ArrayGrid data={[arr]} title={`Original (${n})`} accent="cyan" decimals={0} />
+            <ArrayGrid data={[arr]} title={`Original (${n})`} accent="teal" decimals={0} />
             <ArrayGrid
               data={[uniqMap.values.map((v, i) => (i <= anim.step ? v : NaN))]}
               title={`Unique (${uniqMap.values.length})`} accent="amber" decimals={0}

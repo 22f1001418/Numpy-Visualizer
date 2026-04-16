@@ -1,9 +1,9 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo } from "react";
 import { Plus } from "lucide-react";
 import ArrayGrid from "../components/ArrayGrid";
 import AnimControls from "../components/AnimControls";
 import CodePanel from "../components/CodePanel";
-import { PageShell, FormulaBar, ControlsRow, StepExplainer, Slider, Select, Divider, OpSymbol, Panel } from "../components/UI";
+import { PageShell, FormulaBar, ControlsRow, StepExplainer, Slider, Select, Divider, OpSymbol, Panel, ValueInput } from "../components/UI";
 import { useAnimation } from "../hooks/useAnimation";
 import { randMatrix, add, subtract, multiply, divide, power, mod, greater, fmt, type Matrix } from "../lib/ndarray";
 
@@ -24,33 +24,43 @@ export default function ElementWise() {
   const [rows, setRows] = useState(3);
   const [cols, setCols] = useState(4);
   const [opKey, setOpKey] = useState<OpKey>("add");
+  const [customA, setCustomA] = useState<Matrix | null>(null);
+  const [customB, setCustomB] = useState<Matrix | null>(null);
 
   const op = OPS.find((o) => o.value === opKey)!;
-  const Amat = useMemo(() => randMatrix(rows, cols, 1, 10, 42), [rows, cols]);
-  const Bmat = useMemo(() => randMatrix(rows, cols, 1, 10, 141), [rows, cols]);
+  const Amat = useMemo(() => customA ?? randMatrix(rows, cols, 1, 10, 42), [rows, cols, customA]);
+  const Bmat = useMemo(() => customB ?? randMatrix(rows, cols, 1, 10, 141), [rows, cols, customB]);
   const result = useMemo(() => op.fn(Amat, Bmat), [Amat, Bmat, op]);
 
-  const total = rows * cols;
+  const actualRows = Amat.length;
+  const actualCols = Amat[0]?.length ?? 0;
+  const total = actualRows * actualCols;
   const anim = useAnimation({ totalSteps: total, baseMs: 600 });
-  const sr = Math.floor(anim.step / cols);
-  const sc = anim.step % cols;
+  const sr = Math.floor(anim.step / actualCols);
+  const sc = anim.step % actualCols;
 
   return (
-    <PageShell title="Element-wise Operations" icon={<Plus size={22} />} accent="violet" description={DESCRIPTION}>
+    <PageShell title="Element-wise Operations" icon={<Plus size={22} />} accent="coral" description={DESCRIPTION}>
       <ControlsRow>
-        <Slider label="Rows" value={rows} min={2} max={6} onChange={setRows} />
-        <Slider label="Cols" value={cols} min={2} max={6} onChange={setCols} />
+        <Slider label="Rows" value={rows} min={2} max={6} onChange={(v) => { setRows(v); setCustomA(null); setCustomB(null); }} />
+        <Slider label="Cols" value={cols} min={2} max={6} onChange={(v) => { setCols(v); setCustomA(null); setCustomB(null); }} />
         <Select label="Operation" value={opKey}
           options={OPS.map((o) => ({ value: o.value, label: `${o.label}  ${o.value}` }))}
           onChange={setOpKey as any} />
       </ControlsRow>
 
+      {/* Learner input */}
+      <div className="flex gap-4 flex-wrap">
+        <ValueInput label="values for A" onParsed={setCustomA} accent="teal" />
+        <ValueInput label="values for B" onParsed={setCustomB} accent="coral" />
+      </div>
+
       {/* Overview */}
       <Panel title="Result Overview">
         <div className="flex items-center gap-4 flex-wrap justify-center">
-          <ArrayGrid data={Amat} title="A" accent="cyan" decimals={0} />
-          <OpSymbol symbol={op.label} accent="cyan" />
-          <ArrayGrid data={Bmat} title="B" accent="violet" decimals={0} />
+          <ArrayGrid data={Amat} title="A" accent="teal" decimals={0} />
+          <OpSymbol symbol={op.label} accent="teal" />
+          <ArrayGrid data={Bmat} title="B" accent="coral" decimals={0} />
           <OpSymbol symbol="=" accent="amber" />
           <ArrayGrid data={result} title="Result" accent="amber" decimals={2} />
         </div>
@@ -64,29 +74,29 @@ export default function ElementWise() {
         <AnimControls {...anim} onToggle={anim.toggle} onReset={anim.reset} label="cell" />
 
         <div className="flex items-center gap-4 flex-wrap justify-center">
-          <ArrayGrid data={Amat} title="A" accent="cyan" decimals={0}
-            cellMeta={(r, c) => (r === sr && c === sc ? { glow: "cyan" } : { dim: true })} />
+          <ArrayGrid data={Amat} title="A" accent="teal" decimals={0}
+            cellMeta={(r, c) => (r === sr && c === sc ? { glow: "teal" } : { dim: true })} />
           <OpSymbol symbol={op.label} />
-          <ArrayGrid data={Bmat} title="B" accent="violet" decimals={0}
-            cellMeta={(r, c) => (r === sr && c === sc ? { glow: "violet" } : { dim: true })} />
+          <ArrayGrid data={Bmat} title="B" accent="coral" decimals={0}
+            cellMeta={(r, c) => (r === sr && c === sc ? { glow: "coral" } : { dim: true })} />
           <OpSymbol symbol="=" accent="amber" />
           <ArrayGrid
-            data={result.map((row, i) => row.map((v, j) => (i * cols + j <= anim.step ? v : NaN)))}
+            data={result.map((row, i) => row.map((v, j) => (i * actualCols + j <= anim.step ? v : NaN)))}
             title="Building..." accent="amber" decimals={2}
             cellMeta={(r, c) => (r === sr && c === sc ? { glow: "amber" } : {})} />
         </div>
 
         <FormulaBar accent="amber">
           <span className="text-txt-muted">cell [{sr}, {sc}]:</span>{" "}
-          <span className="accent-cyan">{fmt(Amat[sr][sc], 0)}</span>{" "}
+          <span className="accent-teal">{fmt(Amat[sr]?.[sc] ?? 0, 0)}</span>{" "}
           <span className="text-txt-muted">{op.label}</span>{" "}
-          <span className="accent-violet">{fmt(Bmat[sr][sc], 0)}</span>{" "}
+          <span className="accent-coral">{fmt(Bmat[sr]?.[sc] ?? 0, 0)}</span>{" "}
           <span className="text-txt-muted">=</span>{" "}
-          <span className="accent-amber font-bold">{fmt(result[sr][sc], 2)}</span>
+          <span className="accent-amber font-bold">{fmt(result[sr]?.[sc] ?? 0, 2)}</span>
         </FormulaBar>
 
-        <StepExplainer accent="violet"
-          text={`Reading A[${sr},${sc}] = ${fmt(Amat[sr][sc], 0)} and B[${sr},${sc}] = ${fmt(Bmat[sr][sc], 0)}, applying ${op.label}, and writing ${fmt(result[sr][sc], 2)} into Result[${sr},${sc}]. Element-wise means each cell is independent.`} />
+        <StepExplainer accent="coral"
+          text={`Reading A[${sr},${sc}] = ${fmt(Amat[sr]?.[sc] ?? 0, 0)} and B[${sr},${sc}] = ${fmt(Bmat[sr]?.[sc] ?? 0, 0)}, applying ${op.label}, and writing ${fmt(result[sr]?.[sc] ?? 0, 2)} into Result[${sr},${sc}]. Element-wise means each cell is independent.`} />
       </Panel>
     </PageShell>
   );

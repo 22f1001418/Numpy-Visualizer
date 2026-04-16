@@ -30,7 +30,7 @@ export default function AnimControls({
             whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
             onClick={onToggle}
             className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-150
-              accent-bg-cyan accent-cyan border border-[var(--accent)]/30"
+              accent-bg-teal accent-teal border border-[var(--accent)]/30"
           >
             {playing
               ? <><Square size={14} fill="currentColor" /> Stop</>
@@ -53,7 +53,7 @@ export default function AnimControls({
         {/* Step counter */}
         <div className="font-mono text-xs text-txt-secondary flex items-center gap-2">
           {label && <span className="text-txt-muted">{label}</span>}
-          <span className="accent-cyan font-bold">{step + 1}</span>
+          <span className="accent-teal font-bold">{step + 1}</span>
           <span className="text-txt-muted">/</span>
           <span className="text-txt-muted">{totalSteps}</span>
         </div>

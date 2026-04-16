@@ -3,7 +3,7 @@ import { Grid3x3 } from "lucide-react";
 import ArrayGrid from "../components/ArrayGrid";
 import AnimControls from "../components/AnimControls";
 import CodePanel from "../components/CodePanel";
-import { PageShell, FormulaBar, ShapeBadge, ControlsRow, StepExplainer, Slider, Divider, Panel } from "../components/UI";
+import { PageShell, FormulaBar, ShapeBadge, ControlsRow, StepExplainer, Slider, Divider, Panel, ValueInput } from "../components/UI";
 import { useAnimation } from "../hooks/useAnimation";
 import { randMatrix, matmul, shape, fmt, type Matrix } from "../lib/ndarray";
 
@@ -13,31 +13,41 @@ export default function MatMul() {
   const [m, setM] = useState(3);
   const [n, setN] = useState(3);
   const [p, setP] = useState(4);
+  const [customA, setCustomA] = useState<Matrix | null>(null);
+  const [customB, setCustomB] = useState<Matrix | null>(null);
 
-  const A = useMemo(() => randMatrix(m, n, 1, 9, 7), [m, n]);
-  const B = useMemo(() => randMatrix(n, p, 1, 9, 57), [n, p]);
+  const A = useMemo(() => customA ?? randMatrix(m, n, 1, 9, 7), [m, n, customA]);
+  const B = useMemo(() => customB ?? randMatrix(n, p, 1, 9, 57), [n, p, customB]);
+  const [rA, cA] = shape(A);
+  const [rB, cB] = shape(B);
   const C = useMemo(() => matmul(A, B), [A, B]);
-  const totalSteps = m * p;
+  const outP = cB;
+  const totalSteps = rA * outP;
   const anim = useAnimation({ totalSteps, baseMs: 900 });
-  const si = Math.floor(anim.step / p), sj = anim.step % p;
+  const si = Math.floor(anim.step / outP), sj = anim.step % outP;
 
-  const pairs = Array.from({ length: n }, (_, k) => ({ a: A[si][k], b: B[k][sj], prod: A[si][k] * B[k][sj] }));
+  const pairs = Array.from({ length: cA }, (_, k) => ({ a: A[si]?.[k] ?? 0, b: B[k]?.[sj] ?? 0, prod: (A[si]?.[k] ?? 0) * (B[k]?.[sj] ?? 0) }));
   const dotVal = pairs.reduce((s, pp) => s + pp.prod, 0);
 
   return (
     <PageShell title="Matrix Multiply" icon={<Grid3x3 size={22} />} accent="amber" description={DESCRIPTION}>
       <ControlsRow>
-        <Slider label="A rows (m)" value={m} min={2} max={5} onChange={setM} />
-        <Slider label="Shared (n)" value={n} min={2} max={5} onChange={setN} />
-        <Slider label="B cols (p)" value={p} min={2} max={6} onChange={setP} />
+        <Slider label="A rows (m)" value={m} min={2} max={5} onChange={(v) => { setM(v); setCustomA(null); }} />
+        <Slider label="Shared (n)" value={n} min={2} max={5} onChange={(v) => { setN(v); setCustomA(null); setCustomB(null); }} />
+        <Slider label="B cols (p)" value={p} min={2} max={6} onChange={(v) => { setP(v); setCustomB(null); }} />
       </ControlsRow>
 
+      <div className="flex gap-4 flex-wrap">
+        <ValueInput label="values for A" onParsed={setCustomA} accent="teal" />
+        <ValueInput label="values for B" onParsed={setCustomB} accent="coral" />
+      </div>
+
       <div className="flex items-center gap-2 font-mono text-sm text-txt-secondary flex-wrap">
-        <span className="accent-cyan font-bold">A</span> <ShapeBadge shape={[m, n]} accent="cyan" />
+        <span className="accent-teal font-bold">A</span> <ShapeBadge shape={[rA, cA]} accent="teal" />
         <span className="text-txt-muted">@</span>
-        <span className="accent-violet font-bold">B</span> <ShapeBadge shape={[n, p]} accent="violet" />
+        <span className="accent-coral font-bold">B</span> <ShapeBadge shape={[rB, cB]} accent="coral" />
         <span className="text-txt-muted">&rarr;</span>
-        <span className="accent-amber font-bold">C</span> <ShapeBadge shape={[m, p]} accent="amber" />
+        <span className="accent-amber font-bold">C</span> <ShapeBadge shape={[rA, outP]} accent="amber" />
       </div>
 
       <Divider />
@@ -46,17 +56,16 @@ export default function MatMul() {
         <AnimControls {...anim} onToggle={anim.toggle} onReset={anim.reset} label="cell" />
 
         <div className="flex gap-5 flex-wrap items-start">
-          <ArrayGrid data={A} title="A" accent="cyan" decimals={0}
-            cellMeta={(r) => (r === si ? { glow: "cyan" } : { dim: true })} />
-          <ArrayGrid data={B} title="B" accent="violet" decimals={0}
-            cellMeta={(_, c) => (c === sj ? { glow: "violet" } : { dim: true })} />
+          <ArrayGrid data={A} title="A" accent="teal" decimals={0}
+            cellMeta={(r) => (r === si ? { glow: "teal" } : { dim: true })} />
+          <ArrayGrid data={B} title="B" accent="coral" decimals={0}
+            cellMeta={(_, c) => (c === sj ? { glow: "coral" } : { dim: true })} />
           <ArrayGrid
-            data={C.map((row, i) => row.map((v, j) => (i * p + j <= anim.step ? v : NaN)))}
+            data={C.map((row, i) => row.map((v, j) => (i * outP + j <= anim.step ? v : NaN)))}
             title="C = A @ B" accent="amber" decimals={0}
             cellMeta={(r, c) => (r === si && c === sj ? { glow: "amber" } : {})} />
         </div>
 
-        {/* Dot product drill-down */}
         <div className="glass-panel p-4 border border-edge">
           <div className="text-[10px] text-txt-muted font-mono uppercase tracking-wider mb-2">
             C[{si},{sj}] = row {si} of A &middot; col {sj} of B
@@ -65,9 +74,9 @@ export default function MatMul() {
             {pairs.map((pp, k) => (
               <span key={k} className="flex items-center gap-1">
                 {k > 0 && <span className="text-txt-muted">+</span>}
-                <span className="accent-cyan">{fmt(pp.a, 0)}</span>
+                <span className="accent-teal">{fmt(pp.a, 0)}</span>
                 <span className="text-txt-muted">&times;</span>
-                <span className="accent-violet">{fmt(pp.b, 0)}</span>
+                <span className="accent-coral">{fmt(pp.b, 0)}</span>
               </span>
             ))}
             <span className="text-txt-muted">=</span>
@@ -83,7 +92,7 @@ export default function MatMul() {
         </div>
 
         <StepExplainer accent="amber"
-          text={`To compute C[${si},${sj}], NumPy takes the entire row ${si} from A (${n} values) and the entire column ${sj} from B (${n} values), multiplies them element-wise, then sums the products. This dot product equals ${fmt(dotVal, 0)}.`} />
+          text={`To compute C[${si},${sj}], NumPy takes the entire row ${si} from A (${cA} values) and the entire column ${sj} from B (${cA} values), multiplies them element-wise, then sums the products. This dot product equals ${fmt(dotVal, 0)}.`} />
       </Panel>
 
       <CodePanel code={`C = A @ B          # np.matmul(A, B)\n# C[${si},${sj}] = sum(A[${si},:] * B[:,${sj}]) = ${fmt(dotVal, 0)}`} />

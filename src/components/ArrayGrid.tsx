@@ -23,7 +23,7 @@ interface Props {
 }
 
 export default function ArrayGrid({
-  data, title, accent = "cyan", cellMeta, onCellEdit,
+  data, title, accent = "teal", cellMeta, onCellEdit,
   decimals = 1, compact = false, label, showIndices = true, heatmap = true,
 }: Props) {
   const rows = data.length;
@@ -118,7 +118,7 @@ export default function ArrayGrid({
                     >
                       {isEditing ? (
                         <input
-                          className="w-full h-full bg-transparent text-center outline-none font-mono accent-cyan text-sm"
+                          className="w-full h-full bg-transparent text-center outline-none font-mono accent-teal text-sm"
                           value={editVal} onChange={(e) => setEditVal(e.target.value)}
                           onBlur={commitEdit}
                           onKeyDown={(e) => { if (e.key === "Enter") commitEdit(); if (e.key === "Escape") setEditCell(null); }}

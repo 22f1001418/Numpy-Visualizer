@@ -14,9 +14,9 @@ export default function Home() {
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }} className="text-center mb-10">
           <div className="inline-flex items-center gap-3 mb-3">
-            <Box size={28} className="accent-cyan" />
+            <Box size={28} className="accent-teal" />
             <h1 className="text-3xl lg:text-4xl font-bold tracking-tight">
-              <span className="text-grad-cyan">NumPy</span>{" "}
+              <span className="text-grad-teal">NumPy</span>{" "}
               <span className="text-txt-primary">Visualizer</span>
             </h1>
           </div>

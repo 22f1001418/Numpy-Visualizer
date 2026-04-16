@@ -3,7 +3,7 @@ import { Scissors } from "lucide-react";
 import ArrayGrid from "../components/ArrayGrid";
 import AnimControls from "../components/AnimControls";
 import CodePanel from "../components/CodePanel";
-import { PageShell, FormulaBar, Slider, Select, Divider } from "../components/UI";
+import { PageShell, FormulaBar, Slider, Select, ValueInput } from "../components/UI";
 import { useAnimation } from "../hooks/useAnimation";
 import { randMatrix, slice2d, fmt, type Matrix } from "../lib/ndarray";
 
@@ -20,20 +20,14 @@ export default function Slicing() {
   const [cStart, setCStart] = useState(1);
   const [cEnd, setCEnd] = useState(5);
   const [thresh, setThresh] = useState(25);
+  const [customArr, setCustomArr] = useState<Matrix | null>(null);
 
-  const arr = useMemo(() => randMatrix(rows, cols, 1, 50, 9), [rows, cols]);
+  const arr = useMemo(() => customArr ?? randMatrix(rows, cols, 1, 50, 9), [rows, cols, customArr]);
+  const aR = arr.length;
+  const aC = arr[0]?.length ?? 0;
 
   // Basic slice
   const sliced = useMemo(() => slice2d(arr, rStart, rEnd, cStart, cEnd), [arr, rStart, rEnd, cStart, cEnd]);
-
-  // Cells inside basic slice (for animation)
-  const sliceCells = useMemo(() => {
-    const cells: [number, number][] = [];
-    for (let r = 0; r < rows; r++)
-      for (let c = 0; c < cols; c++)
-        cells.push([r, c]);
-    return cells;
-  }, [rows, cols]);
 
   // Boolean mask
   const mask = useMemo(() => arr.map((row) => row.map((v) => v > thresh)), [arr, thresh]);
@@ -43,7 +37,7 @@ export default function Slicing() {
     return cells;
   }, [mask]);
 
-  const totalScan = rows * cols;
+  const totalScan = aR * aC;
   const anim = useAnimation({ totalSteps: totalScan, baseMs: 400 });
 
   const modeOpts: { value: Mode; label: string }[] = [
@@ -55,31 +49,32 @@ export default function Slicing() {
     <PageShell title="Slicing & Indexing" icon={<Scissors size={22} />} accent="emerald" description={DESCRIPTION}>
       <div className="flex flex-wrap gap-4 items-end">
         <Select label="Mode" value={mode} onChange={setMode as any} options={modeOpts} />
-        <Slider label="Rows" value={rows} min={3} max={8} onChange={setRows} />
-        <Slider label="Cols" value={cols} min={3} max={8} onChange={setCols} />
+        <Slider label="Rows" value={rows} min={3} max={8} onChange={(v) => { setRows(v); setCustomArr(null); }} />
+        <Slider label="Cols" value={cols} min={3} max={8} onChange={(v) => { setCols(v); setCustomArr(null); }} />
       </div>
+
+      <ValueInput label="array values" onParsed={setCustomArr} accent="teal" />
 
       {mode === "basic" && (
         <>
           <div className="flex flex-wrap gap-4 items-end">
-            <Slider label="Row start" value={rStart} min={0} max={rows - 1} onChange={setRStart} />
-            <Slider label="Row end" value={rEnd} min={rStart + 1} max={rows} onChange={setREnd} />
-            <Slider label="Col start" value={cStart} min={0} max={cols - 1} onChange={setCStart} />
-            <Slider label="Col end" value={cEnd} min={cStart + 1} max={cols} onChange={setCEnd} />
+            <Slider label="Row start" value={rStart} min={0} max={aR - 1} onChange={setRStart} />
+            <Slider label="Row end" value={rEnd} min={rStart + 1} max={aR} onChange={setREnd} />
+            <Slider label="Col start" value={cStart} min={0} max={aC - 1} onChange={setCStart} />
+            <Slider label="Col end" value={cEnd} min={cStart + 1} max={aC} onChange={setCEnd} />
           </div>
 
           <AnimControls {...anim} onToggle={anim.toggle} onReset={anim.reset} label="cell scan" />
 
           {(() => {
-            const scanR = Math.floor(anim.step / cols);
-            const scanC = anim.step % cols;
+            const scanR = Math.floor(anim.step / aC);
+            const scanC = anim.step % aC;
             const inSlice = (r: number, c: number) => r >= rStart && r < rEnd && c >= cStart && c < cEnd;
 
-            // Build partial sliced result up to current scan position
             const partialSliced: Matrix = sliced.map((row) => row.map(() => NaN));
             for (let idx = 0; idx <= anim.step; idx++) {
-              const r = Math.floor(idx / cols);
-              const c = idx % cols;
+              const r = Math.floor(idx / aC);
+              const c = idx % aC;
               if (inSlice(r, c)) {
                 partialSliced[r - rStart][c - cStart] = arr[r][c];
               }
@@ -88,10 +83,10 @@ export default function Slicing() {
             return (
               <>
                 <div className="flex gap-8 flex-wrap items-start">
-                  <ArrayGrid data={arr} title="Scanning..." accent="cyan" decimals={0}
+                  <ArrayGrid data={arr} title="Scanning..." accent="teal" decimals={0}
                     cellMeta={(r, c) => {
-                      const idx = r * cols + c;
-                      if (idx === anim.step) return { glow: inSlice(r, c) ? "emerald" : "rose" };
+                      const idx = r * aC + c;
+                      if (idx === anim.step) return { glow: inSlice(r, c) ? "emerald" : "violet" };
                       if (idx < anim.step && inSlice(r, c)) return { glow: "emerald" };
                       if (idx > anim.step) return { dim: true };
                       return {};
@@ -102,7 +97,7 @@ export default function Slicing() {
                   [{scanR},{scanC}] = {fmt(arr[scanR]?.[scanC] ?? 0, 0)}{" "}
                   {inSlice(scanR, scanC)
                     ? <span className="accent-emerald font-bold"> inside slice</span>
-                    : <span className="accent-rose"> outside slice</span>}
+                    : <span className="accent-violet"> outside slice</span>}
                 </FormulaBar>
               </>
             );
@@ -117,18 +112,18 @@ export default function Slicing() {
           <Slider label="Threshold (arr > X)" value={thresh} min={1} max={49} onChange={setThresh} />
           <AnimControls {...anim} onToggle={anim.toggle} onReset={anim.reset} label="cell scan" />
           {(() => {
-            const scanR = Math.floor(anim.step / cols);
-            const scanC = anim.step % cols;
+            const scanR = Math.floor(anim.step / aC);
+            const scanC = anim.step % aC;
             const matchesSoFar = maskCells.filter(
-              ([r, c]) => r * cols + c <= anim.step
+              ([r, c]) => r * aC + c <= anim.step
             );
             return (
               <>
                 <div className="flex gap-8 flex-wrap items-start">
-                  <ArrayGrid data={arr} title="Scanning..." accent="cyan" decimals={0}
+                  <ArrayGrid data={arr} title="Scanning..." accent="teal" decimals={0}
                     cellMeta={(r, c) => {
-                      const idx = r * cols + c;
-                      if (idx === anim.step) return { glow: mask[r][c] ? "emerald" : "rose" };
+                      const idx = r * aC + c;
+                      if (idx === anim.step) return { glow: mask[r][c] ? "emerald" : "violet" };
                       if (idx < anim.step && mask[r][c]) return { glow: "emerald" };
                       if (idx > anim.step) return { dim: true };
                       return {};
@@ -143,7 +138,7 @@ export default function Slicing() {
                   [{scanR},{scanC}] = {fmt(arr[scanR]?.[scanC] ?? 0, 0)}{" "}
                   {mask[scanR]?.[scanC]
                     ? <span className="accent-emerald font-bold"> &gt; {thresh} — selected</span>
-                    : <span className="accent-rose"> &le; {thresh} — skipped</span>}
+                    : <span className="accent-violet"> &le; {thresh} — skipped</span>}
                 </FormulaBar>
               </>
             );

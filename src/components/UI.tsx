@@ -1,10 +1,10 @@
 import { motion } from "framer-motion";
 import { type ReactNode, useState, useCallback } from "react";
-import { Terminal, AlertCircle, ArrowRight, Info } from "lucide-react";
+import { Terminal, AlertCircle, ArrowRight, Info, PencilLine } from "lucide-react";
 import { parseMatrix, type Matrix } from "../lib/ndarray";
 
 /* === Page Shell ==================================================== */
-export function PageShell({ title, icon, accent = "cyan", description, children }: {
+export function PageShell({ title, icon, accent = "teal", description, children }: {
   title: string; icon: ReactNode; accent?: string; description?: string; children: ReactNode;
 }) {
   return (
@@ -21,7 +21,7 @@ export function PageShell({ title, icon, accent = "cyan", description, children 
           <h1 className={`text-xl lg:text-2xl font-bold accent-${accent}`}>{title}</h1>
         </div>
         {description && (
-          <div className="flex items-start gap-2.5 glass-panel px-4 py-3 border-l-[3px] accent-border-cyan">
+          <div className="flex items-start gap-2.5 glass-panel px-4 py-3 border-l-[3px] accent-border-teal">
             <Info size={14} className="text-txt-muted shrink-0 mt-0.5" />
             <p className="text-sm text-txt-secondary leading-relaxed">{description}</p>
           </div>
@@ -43,7 +43,7 @@ export function Panel({ title, children, accent }: { title?: string; children: R
 }
 
 /* === Formula Bar ==================================================== */
-export function FormulaBar({ children, accent = "cyan" }: { children: ReactNode; accent?: string }) {
+export function FormulaBar({ children, accent = "teal" }: { children: ReactNode; accent?: string }) {
   return (
     <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }}
       className={`glass-panel font-mono text-sm text-center px-5 py-3 accent-border-${accent} border`}>
@@ -53,7 +53,7 @@ export function FormulaBar({ children, accent = "cyan" }: { children: ReactNode;
 }
 
 /* === Step Explainer ================================================= */
-export function StepExplainer({ text, accent = "cyan" }: { text: string; accent?: string }) {
+export function StepExplainer({ text, accent = "teal" }: { text: string; accent?: string }) {
   return (
     <div className={`flex items-start gap-2.5 glass-panel px-4 py-3 accent-border-${accent} border-l-[3px]`}>
       <ArrowRight size={14} className={`accent-${accent} shrink-0 mt-0.5`} />
@@ -63,7 +63,7 @@ export function StepExplainer({ text, accent = "cyan" }: { text: string; accent?
 }
 
 /* === Shape Badge ==================================================== */
-export function ShapeBadge({ shape, accent = "cyan" }: { shape: number[]; accent?: string }) {
+export function ShapeBadge({ shape, accent = "teal" }: { shape: number[]; accent?: string }) {
   return (
     <span className={`inline-flex items-center font-mono text-[11px] font-bold px-2.5 py-1 rounded-lg bg-surface-2 border border-edge accent-${accent}`}>
       ({shape.join(" x ")})
@@ -72,7 +72,7 @@ export function ShapeBadge({ shape, accent = "cyan" }: { shape: number[]; accent
 }
 
 /* === Op Symbol ====================================================== */
-export function OpSymbol({ symbol, accent = "cyan" }: { symbol: string; accent?: string }) {
+export function OpSymbol({ symbol, accent = "teal" }: { symbol: string; accent?: string }) {
   return <div className={`flex items-center justify-center text-2xl font-bold font-mono accent-${accent}`}>{symbol}</div>;
 }
 
@@ -95,7 +95,7 @@ export function Slider({ label, value, min, max, onChange, step = 1 }: {
     <label className="flex flex-col gap-1.5 min-w-[120px]">
       <div className="flex justify-between items-baseline">
         <span className="text-[11px] text-txt-secondary font-medium">{label}</span>
-        <span className="font-mono text-[11px] accent-cyan font-bold">{value}</span>
+        <span className="font-mono text-[11px] accent-teal font-bold">{value}</span>
       </div>
       <input type="range" min={min} max={max} step={step} value={value}
         onChange={(e) => onChange(Number(e.target.value))}
@@ -133,5 +133,63 @@ export function ControlsRow({ children }: { children: ReactNode }) {
     <Panel title="Controls">
       <div className="flex flex-wrap gap-4 items-end">{children}</div>
     </Panel>
+  );
+}
+
+/* === Value Input — learners can type their own array values ========= */
+export function ValueInput({ label, onParsed, accent = "teal" }: {
+  label: string;
+  onParsed: (m: Matrix) => void;
+  accent?: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const [text, setText] = useState("");
+  const [error, setError] = useState<string | null>(null);
+
+  const handleApply = useCallback(() => {
+    const result = parseMatrix(text);
+    if (result.ok) {
+      onParsed(result.data);
+      setError(null);
+      setOpen(false);
+      setText("");
+    } else {
+      setError(result.error);
+    }
+  }, [text, onParsed]);
+
+  return (
+    <div className="flex flex-col gap-2">
+      <button onClick={() => setOpen(!open)}
+        className={`flex items-center gap-2 text-[11px] font-medium accent-${accent} hover:underline underline-offset-2`}>
+        <PencilLine size={12} /> {open ? "Close" : `Enter custom ${label}`}
+      </button>
+
+      {open && (
+        <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }}
+          className="glass-panel p-3 flex flex-col gap-2 overflow-hidden">
+          <textarea
+            value={text} onChange={(e) => { setText(e.target.value); setError(null); }}
+            placeholder={"Enter values, e.g.:\n1, 2, 3\n4, 5, 6"}
+            className="bg-surface-2 border border-edge rounded-lg px-3 py-2 font-mono text-xs text-txt-primary resize-y min-h-[60px] outline-none focus:border-[var(--accent)]/50 placeholder:text-txt-muted/40"
+            rows={3}
+          />
+          <div className="flex items-center gap-2">
+            <button onClick={handleApply}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold accent-bg-${accent} accent-${accent} border accent-border-${accent} hover:brightness-110 transition-all`}>
+              Apply
+            </button>
+            {error && (
+              <div className="flex items-center gap-1.5 text-xs accent-violet">
+                <AlertCircle size={12} /> {error}
+              </div>
+            )}
+          </div>
+          <div className="text-[9px] text-txt-muted">
+            Rows on separate lines. Values separated by commas or spaces.
+          </div>
+        </motion.div>
+      )}
+    </div>
   );
 }

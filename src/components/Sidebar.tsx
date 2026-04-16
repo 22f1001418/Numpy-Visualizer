@@ -28,9 +28,9 @@ export default function Sidebar() {
           {/* Header */}
           <div className="flex items-center justify-between px-4 pt-5 pb-3">
             <button className="flex items-center gap-2.5" onClick={() => setPage("home")}>
-              <Box size={20} className="accent-cyan" />
+              <Box size={20} className="accent-teal" />
               <div>
-                <div className="font-bold text-sm text-grad-cyan leading-tight">NumPy Visualizer</div>
+                <div className="font-bold text-sm text-grad-teal leading-tight">NumPy Visualizer</div>
                 <div className="text-[9px] text-txt-muted font-mono mt-0.5">Interactive Learning Tool</div>
               </div>
             </button>

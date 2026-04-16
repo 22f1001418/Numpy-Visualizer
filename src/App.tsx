@@ -10,11 +10,13 @@ import Aggregation from "./pages/Aggregation";
 import Stacking from "./pages/Stacking";
 import Sorting from "./pages/Sorting";
 import Cumulative from "./pages/Cumulative";
+import Vectorization from "./pages/Vectorization";
 
 const PAGE_MAP: Record<string, React.FC> = {
   home: Home, elementwise: ElementWise, matmul: MatMul, reshape: Reshape,
   broadcasting: Broadcasting, slicing: Slicing, aggregation: Aggregation,
   stacking: Stacking, sorting: Sorting, cumulative: Cumulative,
+  vectorization: Vectorization,
 };
 
 export default function App() {

@@ -44,7 +44,7 @@ export default function Cumulative() {
   }, [anim.step, arr, result, op]);
 
   return (
-    <PageShell title="Cumulative Operations" icon={<TrendingUp size={22} />} accent="rose" description={DESCRIPTION}>
+    <PageShell title="Cumulative Operations" icon={<TrendingUp size={22} />} accent="violet" description={DESCRIPTION}>
       <div className="flex flex-wrap gap-4 items-end">
         <Select label="Operation" value={op} onChange={setOp as any}
           options={[{ value: "cumsum", label: "cumsum" }, { value: "cumprod", label: "cumprod" },
@@ -56,19 +56,19 @@ export default function Cumulative() {
 
       {/* Arrays */}
       <div className="flex gap-8 flex-wrap items-start">
-        <ArrayGrid data={[arr]} title="Input" accent="cyan" decimals={0}
+        <ArrayGrid data={[arr]} title="Input" accent="teal" decimals={0}
           cellMeta={(_, c) => {
             if (op === "diff") {
-              if (c === anim.step || c === anim.step + 1) return { glow: "cyan" };
+              if (c === anim.step || c === anim.step + 1) return { glow: "teal" };
             } else {
-              if (c <= anim.step) return { glow: "cyan" };
+              if (c <= anim.step) return { glow: "teal" };
             }
             return { dim: true };
           }} />
         <ArrayGrid
           data={[result.map((v, i) => (i <= anim.step ? v : NaN))]}
-          title={`np.${op}()`} accent="rose" decimals={0}
-          cellMeta={(_, c) => (c === anim.step ? { glow: "rose" } : {})} />
+          title={`np.${op}()`} accent="violet" decimals={0}
+          cellMeta={(_, c) => (c === anim.step ? { glow: "violet" } : {})} />
       </div>
 
       {/* Line chart */}
@@ -91,7 +91,7 @@ export default function Cumulative() {
               const lastX = ((anim.step) / (result.length - 1)) * (result.length * 2);
               return `M${pts[0]} L${pts.join(" L")} L${lastX},100 L0,100 Z`;
             })()}
-            fill="rgba(244, 63, 94, 0.1)"
+            fill="rgba(139, 92, 246, 0.1)"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
           />
@@ -101,7 +101,7 @@ export default function Cumulative() {
               const y = 100 - ((v - Math.min(...result)) / (maxResult - Math.min(...result) + 0.01)) * 80 - 10;
               return `${x},${y}`;
             }).join(" ")}
-            fill="none" stroke="#f43f5e" strokeWidth="1.5"
+            fill="none" stroke="#8B5CF6" strokeWidth="1.5"
           />
         </svg>
 
@@ -123,7 +123,7 @@ export default function Cumulative() {
         </div>
       </div>
 
-      <FormulaBar accent="rose">{formulaText}</FormulaBar>
+      <FormulaBar accent="violet">{formulaText}</FormulaBar>
       <CodePanel code={`np.${op}(arr)`} />
     </PageShell>
   );

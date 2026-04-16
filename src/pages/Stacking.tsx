@@ -42,7 +42,7 @@ export default function Stacking() {
     : (anim.step < shape(A)[1] ? "A" : "B");
 
   return (
-    <PageShell title="Stacking & Splitting" icon={<Layers size={22} />} accent="violet" description={DESCRIPTION}>
+    <PageShell title="Stacking & Splitting" icon={<Layers size={22} />} accent="coral" description={DESCRIPTION}>
       <div className="flex flex-wrap gap-4 items-end">
         <Select label="Operation" value={op} onChange={setOp as any}
           options={[
@@ -58,8 +58,8 @@ export default function Stacking() {
         label={isVert ? "row" : "col"} />
 
       <div className="flex gap-6 flex-wrap items-start">
-        <ArrayGrid data={A} title="A" accent="cyan" decimals={0} />
-        <ArrayGrid data={B} title="B" accent="violet" decimals={0} />
+        <ArrayGrid data={A} title="A" accent="teal" decimals={0} />
+        <ArrayGrid data={B} title="B" accent="coral" decimals={0} />
         <ArrayGrid
           data={isVert
             ? result.map((row, i) => (i <= anim.step ? row : row.map(() => NaN)))
@@ -75,7 +75,7 @@ export default function Stacking() {
       </div>
 
       <FormulaBar accent="amber">
-        {isVert ? "Row" : "Col"} {anim.step} comes from <span className={`font-bold ${origin === "A" ? "accent-cyan" : "accent-violet"}`}>{origin}</span>
+        {isVert ? "Row" : "Col"} {anim.step} comes from <span className={`font-bold ${origin === "A" ? "accent-teal" : "accent-coral"}`}>{origin}</span>
       </FormulaBar>
 
       <CodePanel code={`np.${op}([A, B])`} />

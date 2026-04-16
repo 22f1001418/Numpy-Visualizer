@@ -60,7 +60,7 @@ export default function Broadcasting() {
   const cellIdx = Math.max(0, anim.step - 2);
 
   return (
-    <PageShell title="Broadcasting" icon={<Radio size={22} />} accent="rose" description={DESCRIPTION}>
+    <PageShell title="Broadcasting" icon={<Radio size={22} />} accent="violet" description={DESCRIPTION}>
       <div className="flex flex-wrap gap-4 items-end">
         <Select label="Scenario" value={scenario} onChange={setScenario as any} options={SCENARIOS} />
         {scenario === "custom" && (
@@ -82,8 +82,8 @@ export default function Broadcasting() {
           Stage 1 &mdash; Original shapes
         </h3>
         <div className="flex gap-6 flex-wrap items-start">
-          <ArrayGrid data={A} title="A" accent="cyan" decimals={0} label={`${rA}x${cA}`} />
-          <ArrayGrid data={B} title="B" accent="violet" decimals={0} label={`${rB}x${cB}`} />
+          <ArrayGrid data={A} title="A" accent="teal" decimals={0} label={`${rA}x${cA}`} />
+          <ArrayGrid data={B} title="B" accent="coral" decimals={0} label={`${rB}x${cB}`} />
         </div>
       </div>
 
@@ -95,8 +95,8 @@ export default function Broadcasting() {
             Stage 2 &mdash; Virtual expansion (no data copy)
           </h3>
           <div className="flex gap-6 flex-wrap items-start">
-            <ArrayGrid data={Aexp} title="A broadcast" accent="cyan" decimals={0} label={`${outR}x${outC}`} />
-            <ArrayGrid data={Bexp} title="B broadcast" accent="violet" decimals={0} label={`${outR}x${outC}`} />
+            <ArrayGrid data={Aexp} title="A broadcast" accent="teal" decimals={0} label={`${outR}x${outC}`} />
+            <ArrayGrid data={Bexp} title="B broadcast" accent="coral" decimals={0} label={`${outR}x${outC}`} />
           </div>
         </div>
       )}
@@ -118,8 +118,8 @@ export default function Broadcasting() {
                 <ArrayGrid data={partial} title="A + B" accent="amber" decimals={0}
                   cellMeta={(r, c) => (r === cr && c === cc ? { glow: "amber" } : {})} />
                 <FormulaBar accent="amber">
-                  [{cr},{cc}]: <span className="accent-cyan">{fmt(Aexp[cr]?.[cc] ?? 0, 0)}</span>
-                  {" + "}<span className="accent-violet">{fmt(Bexp[cr]?.[cc] ?? 0, 0)}</span>
+                  [{cr},{cc}]: <span className="accent-teal">{fmt(Aexp[cr]?.[cc] ?? 0, 0)}</span>
+                  {" + "}<span className="accent-coral">{fmt(Bexp[cr]?.[cc] ?? 0, 0)}</span>
                   {" = "}<span className="accent-amber font-bold">{fmt(result[cr]?.[cc] ?? 0, 0)}</span>
                 </FormulaBar>
               </>
@@ -129,7 +129,7 @@ export default function Broadcasting() {
       )}
 
       {!compatible && (
-        <div className="accent-rose accent-bg-rose border accent-border-rose rounded-xl px-5 py-3 text-sm">
+        <div className="accent-violet accent-bg-rose border accent-border-rose rounded-xl px-5 py-3 text-sm">
           Shapes ({rA}x{cA}) and ({rB}x{cB}) are not broadcast-compatible.
         </div>
       )}

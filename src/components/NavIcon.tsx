@@ -1,6 +1,6 @@
 import {
   Plus, Grid3x3, LayoutGrid, Radio, Scissors,
-  Layers, BarChart3, ArrowUpDown, TrendingUp, Box,
+  Layers, BarChart3, ArrowUpDown, TrendingUp, Zap, Box,
   type LucideIcon,
 } from "lucide-react";
 import type { IconKey } from "../store/useStore";
@@ -15,6 +15,7 @@ const ICON_MAP: Record<IconKey, LucideIcon> = {
   barChart3: BarChart3,
   arrowUpDown: ArrowUpDown,
   trendingUp: TrendingUp,
+  zap: Zap,
 };
 
 export default function NavIcon({ iconKey, size = 16, className }: { iconKey: IconKey; size?: number; className?: string }) {
