@@ -140,8 +140,14 @@ export function minAxis(m: Matrix, axis: 0 | 1 | null): Vector | number {
 export const slice2d = (m: Matrix, rS: number, rE: number, cS: number, cE: number): Matrix =>
   m.slice(rS, rE).map((r) => r.slice(cS, cE));
 
+export function isBroadcastCompatible(rA: number, cA: number, rB: number, cB: number): boolean {
+  return (rA === rB || rA === 1 || rB === 1) && (cA === cB || cA === 1 || cB === 1);
+}
+
 export function broadcastAdd(a: Matrix, b: Matrix): Matrix {
   const [rA, cA] = shape(a); const [rB, cB] = shape(b);
+  if (!isBroadcastCompatible(rA, cA, rB, cB))
+    throw new Error(`Cannot broadcast shapes (${rA},${cA}) and (${rB},${cB})`);
   const rO = Math.max(rA, rB); const cO = Math.max(cA, cB);
   const out = zeros(rO, cO);
   for (let i = 0; i < rO; i++) for (let j = 0; j < cO; j++) out[i][j] = a[i % rA][j % cA] + b[i % rB][j % cB];

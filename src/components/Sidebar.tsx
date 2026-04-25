@@ -45,7 +45,7 @@ export default function Sidebar() {
           <div className="h-px bg-edge mx-4" />
 
           {/* Categorized nav */}
-          <nav className="flex-1 overflow-y-auto px-3 py-3">
+          <nav className="flex-1 overflow-y-auto px-3 py-3 pb-0">
             {CATEGORIES.map((cat) => {
               const items = NAV_ITEMS.filter((n) => n.category === cat.key);
               return (
@@ -96,6 +96,13 @@ export default function Sidebar() {
               );
             })}
           </nav>
+
+          {/* Footer */}
+          <div className="px-4 py-3 border-t border-edge">
+            <div className="text-[10px] text-txt-muted font-mono text-center">
+              built by <span className="font-bold text-txt-secondary">KM</span>
+            </div>
+          </div>
         </div>
       </motion.aside>
     </>
